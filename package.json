@@ -35,7 +35,20 @@
       { "command": "ultraInstinct.bufferBottom", "title": "Ultra Instinct: Buffer bottom (G)" },
       { "command": "ultraInstinct.paragraphBackward", "title": "Ultra Instinct: Paragraph backward ({)" },
       { "command": "ultraInstinct.paragraphForward", "title": "Ultra Instinct: Paragraph forward (})" },
-      { "command": "ultraInstinct.search", "title": "Ultra Instinct: Search (/)" }
+      { "command": "ultraInstinct.search", "title": "Ultra Instinct: Search (/)" },
+      { "command": "ultraInstinct.opDelete", "title": "Ultra Instinct: Delete operator (d)" },
+      { "command": "ultraInstinct.opChange", "title": "Ultra Instinct: Change operator (c)" },
+      { "command": "ultraInstinct.opYank", "title": "Ultra Instinct: Yank operator (y)" },
+      { "command": "ultraInstinct.deleteToEol", "title": "Ultra Instinct: Delete to end of line (D)" },
+      { "command": "ultraInstinct.changeToEol", "title": "Ultra Instinct: Change to end of line (C)" },
+      { "command": "ultraInstinct.yankLine", "title": "Ultra Instinct: Yank line (Y)" },
+      { "command": "ultraInstinct.cutChar", "title": "Ultra Instinct: Cut character (x)" },
+      { "command": "ultraInstinct.pasteAfter", "title": "Ultra Instinct: Paste after (p)" },
+      { "command": "ultraInstinct.pasteBefore", "title": "Ultra Instinct: Paste before (P)" },
+      { "command": "ultraInstinct.openBelow", "title": "Ultra Instinct: Open line below (o)" },
+      { "command": "ultraInstinct.openAbove", "title": "Ultra Instinct: Open line above (O)" },
+      { "command": "ultraInstinct.undo", "title": "Ultra Instinct: Undo (u)" },
+      { "command": "ultraInstinct.redo", "title": "Ultra Instinct: Redo (Ctrl+R)" }
     ],
     "keybindings": [
       { "command": "-tabout", "key": "tab",
@@ -91,7 +104,25 @@
       { "command": "ultraInstinct.paragraphBackward", "key": "shift+[", "when": "editorTextFocus && ultraInstinct.power" },
       { "command": "ultraInstinct.paragraphForward",  "key": "shift+]", "when": "editorTextFocus && ultraInstinct.power" },
 
-      { "command": "ultraInstinct.search", "key": "/", "when": "editorTextFocus && ultraInstinct.power" }
+      { "command": "ultraInstinct.search", "key": "/", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.opDelete", "key": "d", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.opChange", "key": "c", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.opYank",   "key": "y", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.deleteToEol", "key": "shift+d", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.changeToEol", "key": "shift+c", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.yankLine",    "key": "shift+y", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.cutChar",     "key": "x",       "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.pasteAfter",  "key": "p",       "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.pasteBefore", "key": "shift+p", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.openBelow", "key": "o",       "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.openAbove", "key": "shift+o", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.undo", "key": "u",      "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.redo", "key": "ctrl+r", "when": "editorTextFocus && ultraInstinct.power" }
     ]
   },
   "scripts": {

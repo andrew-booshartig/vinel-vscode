@@ -20,6 +20,7 @@ export enum Mode {
 
 const modeByDocument = new Map<string, Mode>();
 let pendingCount = '';
+let pendingOperatorLabel: string | null = null;
 
 let statusBarItem: vscode.StatusBarItem;
 
@@ -43,6 +44,7 @@ export function isPower(editor: vscode.TextEditor): boolean {
 export function setMode(editor: vscode.TextEditor, mode: Mode): void {
   modeByDocument.set(keyFor(editor), mode);
   pendingCount = '';
+  pendingOperatorLabel = null;
   applyToEditor(editor);
 }
 
@@ -65,8 +67,18 @@ function applyToEditor(editor: vscode.TextEditor): void {
 function renderStatusBar(mode: Mode): void {
   const label = mode === Mode.Power ? '☯ POWER' : '☯ EDIT';
   const count = pendingCount ? ` ${pendingCount}` : '';
-  statusBarItem.text = label + count;
+  const op = pendingOperatorLabel ? ` ${pendingOperatorLabel}…` : '';
+  statusBarItem.text = label + count + op;
   statusBarItem.show();
+}
+
+/** Show/clear an operator-pending indicator (e.g. "d…" while an operator is
+ * waiting for its target). Purely a status-bar cue — does not affect count
+ * or mode state. */
+export function setPendingOperatorLabel(label: string | null): void {
+  pendingOperatorLabel = label;
+  const editor = vscode.window.activeTextEditor;
+  if (editor) renderStatusBar(getMode(editor));
 }
 
 /** Called whenever focus moves to a different editor — re-apply that

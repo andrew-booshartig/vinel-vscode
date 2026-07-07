@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { Mode, appendDigit, createStatusBarItem, setMode, syncActiveEditor, zeroIsMotion } from './state';
+import { Mode, appendDigit, consumeCount, createStatusBarItem, setMode, syncActiveEditor, zeroIsMotion } from './state';
 import * as motions from './motions';
+import * as operators from './operators';
 
 /**
  * Ultra Instinct — ground-up modal editing engine for VSCode. Not a Vim
@@ -24,6 +25,7 @@ import * as motions from './motions';
 function enterPower(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
+  operators.cancelPendingOperator(); // Escape cancels a half-typed d/c/y, like vim
   setMode(editor, Mode.Power);
 }
 
@@ -51,6 +53,20 @@ function digit(n: string): () => void {
     const editor = vscode.window.activeTextEditor;
     if (editor) appendDigit(editor, n);
   };
+}
+
+/** `u` / Ctrl+R — VSCode's native undo/redo directly (no reimplementation).
+ * Any stray pending count is cleared even though it's unused, so it can't
+ * leak into a later, unrelated command. */
+function undo(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) consumeCount(editor);
+  vscode.commands.executeCommand('undo');
+}
+function redo(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) consumeCount(editor);
+  vscode.commands.executeCommand('redo');
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -81,9 +97,12 @@ export function activate(context: vscode.ExtensionContext): void {
     ['ultraInstinct.moveRight', motions.moveRight],
     ['ultraInstinct.moveUp', motions.moveUp],
     ['ultraInstinct.moveDown', motions.moveDown],
-    ['ultraInstinct.wordForward', motions.wordForward],
-    ['ultraInstinct.wordBackward', motions.wordBackward],
-    ['ultraInstinct.wordEnd', motions.wordEnd],
+    // w/b/e double as operator targets (dw/cw/yw) — see operators.ts's note on
+    // why these route through operatorAwareWordMotion instead of calling
+    // motions.wordForward() etc. directly (count-multiplication semantics).
+    ['ultraInstinct.wordForward', operators.operatorAwareWordMotion('cursorWordStartRight')],
+    ['ultraInstinct.wordBackward', operators.operatorAwareWordMotion('cursorWordStartLeft')],
+    ['ultraInstinct.wordEnd', operators.operatorAwareWordMotion('cursorWordEndRight')],
     ['ultraInstinct.firstNonBlank', motions.firstNonBlank],
     ['ultraInstinct.lineEnd', motions.lineEnd],
     ['ultraInstinct.bufferTop', motions.bufferTop],
@@ -91,6 +110,20 @@ export function activate(context: vscode.ExtensionContext): void {
     ['ultraInstinct.paragraphBackward', motions.paragraphBackward],
     ['ultraInstinct.paragraphForward', motions.paragraphForward],
     ['ultraInstinct.search', motions.search],
+
+    ['ultraInstinct.opDelete', operators.operatorKey('delete')],
+    ['ultraInstinct.opChange', operators.operatorKey('change')],
+    ['ultraInstinct.opYank', operators.operatorKey('yank')],
+    ['ultraInstinct.deleteToEol', operators.deleteToEol],
+    ['ultraInstinct.changeToEol', operators.changeToEol],
+    ['ultraInstinct.yankLine', operators.yankLine],
+    ['ultraInstinct.cutChar', operators.cutChar],
+    ['ultraInstinct.pasteAfter', operators.pasteAfter],
+    ['ultraInstinct.pasteBefore', operators.pasteBefore],
+    ['ultraInstinct.openBelow', operators.openBelow],
+    ['ultraInstinct.openAbove', operators.openAbove],
+    ['ultraInstinct.undo', undo],
+    ['ultraInstinct.redo', redo],
   ];
 
   for (const [id, handler] of commands) {

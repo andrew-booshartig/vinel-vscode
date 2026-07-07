@@ -62,6 +62,37 @@ worth its own deliberate decision later, not bundled in silently here.
 text-object/selection), VISUAL select mode, marks/registers, the SPC leader
 system.
 
+**The modal engine — Milestone 2 (`src/operators.ts`, `src/registers.ts`).**
+Vim's operator grammar: `[count1] operator [count2] motion` — the effective
+repeat is count1 × count2 (`2d3w` deletes 6 words), or a doubled operator
+letter (`dd`/`cc`/`yy`) meaning "N whole lines" from count1 alone. Scoped to
+the highest-frequency subset first — text objects (`ci"`, `da(`) and
+generalizing to *any* motion (`dG`, `d}`) are follow-ons; the range-based
+architecture here already supports them once wired up.
+
+- **`d` / `c` / `y`** — open a pending operator (status bar shows e.g. `d…`),
+  cancelled by Escape.
+- **`dd` / `cc` / `yy`** — N whole lines. Delete/yank remove them entirely;
+  `cc` instead empties down to ONE line (keeping the first line's
+  indentation) and drops into EDIT — real vim's `cc`, verified against an
+  offset-based splice simulation (11/11 cases: first/middle/last line,
+  multi-line counts, the true-end-of-buffer edge case, single-line docs).
+- **`dw` / `cw` / `yw`** — word-target, via the raw cursor-move command run
+  `count1 × count2` times (not composed from the plain-motion functions,
+  which each consume their own count once and would double-count if reused
+  here as a black box).
+- **`D` / `C`** — delete/change to end of line. **`Y`** — standard vim: means
+  `yy` (yank the whole line), not "yank to end of line" — that reading is a
+  non-default remap some configs add.
+- **`x`** — cut N characters. **`p` / `P`** — paste after/before, register-
+  aware: a linewise register (from `dd`/`yy`) pastes as new line(s); a
+  charwise one (`dw`/`x`) pastes inline.
+- **`o` / `O`** — open a line below/above, auto-indent, drop into EDIT.
+- **`u` / `Ctrl+R`** — VSCode's native undo/redo directly.
+- **The unnamed register** (`registers.ts`) — vim's default `"` register,
+  what every op above reads/writes. Named registers (`a`-`z`) are a distinct,
+  larger feature, not built here.
+
 ## ⚠️ Testing this requires VSCodeVim disabled
 
 VSCodeVim is very likely still installed and active in your VSCode profile.
