@@ -45,7 +45,10 @@
       { "command": "ultraInstinct.smartShiftTab", "key": "shift+tab",
         "when": "editorTextFocus && inSnippetMode && !editorHasSelection && !editorHasMultipleSelections" },
 
-      { "command": "-acceptSelectedSuggestion", "key": "tab" }
+      { "command": "-acceptSelectedSuggestion", "key": "tab" },
+
+      { "command": "tabout", "key": "tab",
+        "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode" }
     ]
   },
   "scripts": {
