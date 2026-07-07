@@ -18,15 +18,21 @@ populate), both "jump to next tabstop" and "tabout" become eligible for Tab,
 and tabout tends to win, yanking you out of the snippet.
 
 This extension unbinds tabout's unqualified defaults and replaces them with
-`ultraInstinct.smartTab` / `ultraInstinct.smartShiftTab`, which check whether
-the cursor is actually next to one of tabout's configured special characters
-(bracket/quote/etc.) before deciding: adjacent → tab out; not adjacent →
-normal snippet-tabstop navigation. No guessing block boundaries from
-comments/blank lines — just "what's the character right next to the cursor."
+`ultraInstinct.smartTab` / `ultraInstinct.smartShiftTab` — scoped **strictly**
+to the `pf` snippet (Quick F-String Print, `print(f"$1")$0`), and **strictly**
+to the moment the cursor sits right before a `}`. Every other snippet, and
+this one everywhere else, gets 100% default VSCode behavior — untouched.
+
+There's no VSCode API for "which named snippet is active," so this checks the
+literal text shape only `pf` produces (the current line reads `print(f"...`
+up to the cursor, string not yet closed) instead of guessing from bracket
+type alone — an earlier version keyed off "any bracket/quote in any snippet"
+and wrongly hijacked Tab in `dict`/`set`/`gd` too, which also have literal
+`{`/`"` in their bodies. Scoped tight on purpose.
 
 Priority, always:
-1. In a snippet, next to a bracket/quote → tab **out** of it
-2. In a snippet, not next to one → tabstop-to-tabstop, as normal
+1. In the `pf` snippet, cursor right before a `}` → tab **out** of it
+2. Any other snippet, or `pf` not next to a `}` → tabstop-to-tabstop, as normal
 3. Not in a snippet → tabout's own default behavior, untouched
 4. Dropdown open → Tab never accepts a suggestion; only Enter does
 

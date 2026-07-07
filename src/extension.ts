@@ -3,78 +3,56 @@ import * as vscode from 'vscode';
 /**
  * Ultra Instinct — ground-up modal editing for VSCode (not a Vim emulation).
  *
- * First command: a "smart Tab" that fixes a real conflict between the
- * `tabout` extension and VSCode's own snippet-tabstop navigation. tabout's
- * own default keybinding only checks `!suggestWidgetVisible` — it does NOT
- * exclude `inSnippetMode` — so whenever you're on a snippet tabstop and the
- * completion dropdown just isn't open at that instant, tabout and the
- * built-in "jump to next tabstop" both become eligible for Tab, and tabout
- * (extension-contributed) frequently wins the tie, hijacking you out of the
- * snippet.
+ * First command: a "smart Tab" scoped SPECIFICALLY to the "pf" (Quick
+ * F-String Print) snippet — see ~/Library/Application Support/Code/User/
+ * snippets/python.json, body: `print(f"$1")$0`.
  *
- * This extension's package.json unbinds tabout's unqualified defaults and
- * replaces them with these two commands, which explicitly check whether the
- * cursor sits next to one of tabout's configured "special" characters
- * (bracket/quote/etc.) before deciding: if so, tab OUT of it; if not,
- * continue normal snippet-tabstop navigation. Comments and blank lines never
- * confuse it, because the check is purely "what's the character right next
- * to my cursor," not "guess the boundary of a block."
+ * Inside that snippet's $1 field you type free-form f-string content,
+ * including your own `{expr}` interpolations (auto-closed by the editor).
+ * When the cursor sits next to the closing `}` of one of those, you want Tab
+ * to hop over it (via `tabout`) rather than advance the snippet's own
+ * tabstop. Everywhere else — every other snippet, and this one when NOT next
+ * to a `}` — Tab must behave exactly as if this extension didn't exist.
+ *
+ * There's no VSCode API to ask "which named snippet is currently active," so
+ * this deliberately does NOT try to generalize to "any bracket in any
+ * snippet" (an earlier version did, and it wrongly hijacked Tab in `dict`/
+ * `set`/`gd`, which also contain literal `{`/`"` in their bodies). Instead it
+ * checks the literal TEXT SHAPE that only the pf snippet produces — the
+ * current line reads `print(f"...` up to the cursor, string not yet closed —
+ * combined with the pre-existing `inSnippetMode` gate (see package.json).
+ * That combination is unique to being inside pf's $1 field; nothing else
+ * matches it. If the pf snippet's body ever changes, update PF_PREFIX below
+ * to match.
  */
 
-interface CharPair {
-  open: string;
-  close: string;
-}
-
-// Mirrors tabout's own default (albert.tabout package.json) — used only if
-// the user hasn't customized `tabout.charactersToTabOutFrom` themselves.
-const DEFAULT_PAIRS: CharPair[] = [
-  { open: '[', close: ']' },
-  { open: '{', close: '}' },
-  { open: '(', close: ')' },
-  { open: "'", close: "'" },
-  { open: '"', close: '"' },
-  { open: ':', close: ':' },
-  { open: '=', close: '=' },
-  { open: '>', close: '>' },
-  { open: '<', close: '<' },
-  { open: '.', close: '.' },
-  { open: '`', close: '`' },
-  { open: ';', close: ';' },
-];
-
-function getCharPairs(): CharPair[] {
-  const configured = vscode.workspace
-    .getConfiguration('tabout')
-    .get<CharPair[]>('charactersToTabOutFrom');
-  return configured && configured.length > 0 ? configured : DEFAULT_PAIRS;
-}
-
-function isSpecial(ch: string | undefined, pairs: CharPair[]): boolean {
-  if (!ch) return false;
-  return pairs.some((p) => p.open === ch || p.close === ch);
-}
-
-/** True when the cursor is immediately next to (before or after) one of the
- * configured special characters — i.e. there's something real to tab out of. */
-function cursorIsAdjacentToSpecialChar(editor: vscode.TextEditor): boolean {
-  const pos = editor.selection.active;
-  const line = editor.document.lineAt(pos.line).text;
-  const before = pos.character > 0 ? line.charAt(pos.character - 1) : undefined;
-  const after = pos.character < line.length ? line.charAt(pos.character) : undefined;
-  const pairs = getCharPairs();
-  return isSpecial(before, pairs) || isSpecial(after, pairs);
-}
+const PF_PREFIX = /^\s*print\(f"[^"]*$/;
 
 function isTaboutInstalled(): boolean {
   return vscode.extensions.getExtension('albert.tabout') !== undefined;
+}
+
+/** True ONLY inside the pf snippet's f-string field, with a `}` immediately
+ * ahead of the cursor (the auto-closed brace of the interpolation you just
+ * finished typing).  Checking only the character AHEAD (not behind) matters:
+ * right after hopping over a `}`, the character BEHIND the cursor is still
+ * `}` — if we checked that too, pressing Tab again with nothing typed in
+ * between would wrongly fire a second time and skip past the closing quote. */
+function isNextToClosingBraceInPfSnippet(editor: vscode.TextEditor): boolean {
+  const pos = editor.selection.active;
+  const line = editor.document.lineAt(pos.line).text;
+  const before = line.slice(0, pos.character);
+  if (!PF_PREFIX.test(before)) return false;
+
+  const nextChar = pos.character < line.length ? line.charAt(pos.character) : undefined;
+  return nextChar === '}';
 }
 
 async function smartTab(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
 
-  if (isTaboutInstalled() && cursorIsAdjacentToSpecialChar(editor)) {
+  if (isTaboutInstalled() && isNextToClosingBraceInPfSnippet(editor)) {
     try {
       await vscode.commands.executeCommand('tabout');
       return;
@@ -93,7 +71,7 @@ async function smartShiftTab(): Promise<void> {
     .getConfiguration('tabout')
     .get<boolean>('enableReverseShiftTab', true);
 
-  if (reverseEnabled && isTaboutInstalled() && cursorIsAdjacentToSpecialChar(editor)) {
+  if (reverseEnabled && isTaboutInstalled() && isNextToClosingBraceInPfSnippet(editor)) {
     try {
       await vscode.commands.executeCommand('tabout-reverse');
       return;
