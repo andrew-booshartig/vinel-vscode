@@ -19,6 +19,24 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      { "command": "ultraInstinct.enterPower", "title": "Ultra Instinct: Enter POWER mode" },
+      { "command": "ultraInstinct.enterEdit", "title": "Ultra Instinct: Enter EDIT mode" },
+      { "command": "ultraInstinct.moveLeft", "title": "Ultra Instinct: Move left (h)" },
+      { "command": "ultraInstinct.moveRight", "title": "Ultra Instinct: Move right (l)" },
+      { "command": "ultraInstinct.moveUp", "title": "Ultra Instinct: Move up (k)" },
+      { "command": "ultraInstinct.moveDown", "title": "Ultra Instinct: Move down (j)" },
+      { "command": "ultraInstinct.wordForward", "title": "Ultra Instinct: Word forward (w)" },
+      { "command": "ultraInstinct.wordBackward", "title": "Ultra Instinct: Word backward (b)" },
+      { "command": "ultraInstinct.wordEnd", "title": "Ultra Instinct: Word end (e)" },
+      { "command": "ultraInstinct.firstNonBlank", "title": "Ultra Instinct: First non-blank (^)" },
+      { "command": "ultraInstinct.lineEnd", "title": "Ultra Instinct: Line end ($)" },
+      { "command": "ultraInstinct.bufferTop", "title": "Ultra Instinct: Buffer top (gg)" },
+      { "command": "ultraInstinct.bufferBottom", "title": "Ultra Instinct: Buffer bottom (G)" },
+      { "command": "ultraInstinct.paragraphBackward", "title": "Ultra Instinct: Paragraph backward ({)" },
+      { "command": "ultraInstinct.paragraphForward", "title": "Ultra Instinct: Paragraph forward (})" },
+      { "command": "ultraInstinct.search", "title": "Ultra Instinct: Search (/)" }
+    ],
     "keybindings": [
       { "command": "-tabout", "key": "tab",
         "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible" },
@@ -33,7 +51,47 @@
       { "command": "-acceptSelectedSuggestion", "key": "tab" },
 
       { "command": "tabout", "key": "tab",
-        "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode" }
+        "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode" },
+
+      { "command": "ultraInstinct.enterPower", "key": "escape",
+        "when": "editorTextFocus" },
+      { "command": "ultraInstinct.enterEdit", "key": "i",
+        "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.digit0", "key": "0", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit1", "key": "1", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit2", "key": "2", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit3", "key": "3", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit4", "key": "4", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit5", "key": "5", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit6", "key": "6", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit7", "key": "7", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit8", "key": "8", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.digit9", "key": "9", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.moveLeft",  "key": "h",     "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveLeft",  "key": "left",  "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveDown",  "key": "j",     "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveDown",  "key": "down",  "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveUp",    "key": "k",     "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveUp",    "key": "up",    "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveRight", "key": "l",     "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.moveRight", "key": "right", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.wordForward",  "key": "w", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.wordBackward", "key": "b", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.wordEnd",      "key": "e", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.firstNonBlank", "key": "shift+6", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.lineEnd",       "key": "shift+4", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.bufferTop",    "key": "g g",     "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.bufferBottom", "key": "shift+g", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.paragraphBackward", "key": "shift+[", "when": "editorTextFocus && ultraInstinct.power" },
+      { "command": "ultraInstinct.paragraphForward",  "key": "shift+]", "when": "editorTextFocus && ultraInstinct.power" },
+
+      { "command": "ultraInstinct.search", "key": "/", "when": "editorTextFocus && ultraInstinct.power" }
     ]
   },
   "scripts": {
