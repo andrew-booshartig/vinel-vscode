@@ -19,16 +19,6 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "ultraInstinct.smartTab",
-        "title": "Ultra Instinct: Smart Tab (tabout-aware snippet jump)"
-      },
-      {
-        "command": "ultraInstinct.smartShiftTab",
-        "title": "Ultra Instinct: Smart Shift+Tab (tabout-aware snippet jump back)"
-      }
-    ],
     "keybindings": [
       { "command": "-tabout", "key": "tab",
         "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible" },
@@ -39,11 +29,6 @@
         "when": "config.tabout.enableReverseShiftTab && editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible" },
       { "command": "tabout-reverse", "key": "shift+tab",
         "when": "config.tabout.enableReverseShiftTab && editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode" },
-
-      { "command": "ultraInstinct.smartTab", "key": "tab",
-        "when": "editorTextFocus && inSnippetMode && !editorHasSelection && !editorHasMultipleSelections" },
-      { "command": "ultraInstinct.smartShiftTab", "key": "shift+tab",
-        "when": "editorTextFocus && inSnippetMode && !editorHasSelection && !editorHasMultipleSelections" },
 
       { "command": "-acceptSelectedSuggestion", "key": "tab" },
 
