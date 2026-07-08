@@ -89,20 +89,26 @@ function wordObject(doc: vscode.TextDocument, pos: vscode.Position, big: boolean
 // inside, or the next pair after it. (Escaped quotes are not special-cased.)
 
 function quoteObject(doc: vscode.TextDocument, pos: vscode.Position, quote: string, around: boolean): TextObjectResult | null {
-  const text = doc.lineAt(pos.line).text;
-  const marks: number[] = [];
-  for (let i = 0; i < text.length; i++) if (text[i] === quote) marks.push(i);
-  for (let p = 0; p + 1 < marks.length; p += 2) {
-    const open = marks[p];
-    const close = marks[p + 1];
-    if (pos.character <= close) {
-      let sCol = around ? open : open + 1;
+  // A string is line-bound (quotes pair within a line), but the SEEK is not:
+  // scan the cursor's line first, then subsequent lines, for the first pair —
+  // so `ci"` finds the next string ahead regardless of what line it's on.
+  const lastLine = doc.lineCount - 1;
+  for (let line = pos.line; line <= lastLine; line++) {
+    const text = doc.lineAt(line).text;
+    const marks: number[] = [];
+    for (let i = 0; i < text.length; i++) if (text[i] === quote) marks.push(i);
+    for (let p = 0; p + 1 < marks.length; p += 2) {
+      const open = marks[p];
+      const close = marks[p + 1];
+      // On the cursor's line, ignore pairs that already ended before it.
+      if (line === pos.line && close < pos.character) continue;
+      const sCol = around ? open : open + 1;
       let eCol = around ? close + 1 : close;
       if (around) {
         while (eCol < text.length && /\s/.test(text[eCol])) eCol++; // a" grabs trailing ws
       }
       return {
-        range: new vscode.Range(new vscode.Position(pos.line, sCol), new vscode.Position(pos.line, eCol)),
+        range: new vscode.Range(new vscode.Position(line, sCol), new vscode.Position(line, eCol)),
         linewise: false,
       };
     }
@@ -131,12 +137,11 @@ function bracketObject(doc: vscode.TextDocument, pos: vscode.Position, open: str
         d--;
       }
     }
-    // 3) not inside one → seek FORWARD on the current line for the next opener
-    //    (vim: the object is found ahead, so `di[` works from anywhere on the
-    //    line, not only when the cursor is already inside/on the bracket).
+    // 3) not inside one → seek FORWARD through the whole document for the next
+    //    opener (nvim-faithful: `di[` finds the next bracket ahead regardless
+    //    of what line it's on, then deletes inside its matched pair).
     if (openOff === -1) {
-      const lineEnd = doc.offsetAt(doc.lineAt(pos.line).range.end);
-      for (let j = cursor; j < lineEnd; j++) {
+      for (let j = cursor; j < text.length; j++) {
         if (text[j] === open) { openOff = j; break; }
       }
     }
