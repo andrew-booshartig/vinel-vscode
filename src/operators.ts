@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Mode, consumeCount, setMode, setPendingOperatorLabel } from './state';
+import { Mode, consumeCount, getMode, isVisual, setMode, setPendingOperatorLabel } from './state';
 import { setRegister, getRegister } from './registers';
 
 /**
@@ -10,12 +10,17 @@ import { setRegister, getRegister } from './registers';
  * actual text mutation (delete/change/yank), operating on either a
  * charwise range or N whole lines.
  *
- * Scope (Milestone 2): dd/cc/yy (line), dw/cw/yw (word), D/C/Y (to end of
- * line / whole line), x/p/P (character), o/O (open line), undo/redo — the
- * highest-frequency vim edits. Text objects (`ci"`, `da(`) and generalizing
- * "any operator + any motion" (dG, d}, d/pattern, …) are follow-on
- * milestones; the architecture here (charwise range application) already
- * supports them cleanly once wired up.
+ * VISUAL mode reuses this machinery directly: an operator pressed with a
+ * selection live applies immediately to that selection (no pending-operator
+ * wait) — charwise via `applyCharwiseRange`, linewise via `applyLinewise` —
+ * see `applyVisualOperator`.
+ *
+ * NOTE — known simplification: charwise visual selection uses VS Code's own
+ * (exclusive-end) selection model, so a selection shows/affects exactly what's
+ * highlighted. Real vim's visual is INCLUSIVE of the cell under the cursor
+ * (one char more). This is the same between-characters vs character-cell
+ * model difference already documented for `$` in motions.ts, and is deferred
+ * to that same future decision rather than partially emulated here.
  */
 
 export type OperatorKind = 'delete' | 'change' | 'yank';
@@ -46,6 +51,13 @@ export function operatorKey(op: OperatorKind) {
   return async () => {
     const editor = activeEditor();
     if (!editor) return;
+
+    // In visual mode the operator applies immediately to the selection —
+    // there's no motion to wait for.
+    if (isVisual(editor)) {
+      await applyVisualOperator(editor, op);
+      return;
+    }
 
     if (pendingOperator === op) {
       const n = operatorCount;
@@ -187,6 +199,42 @@ async function applyLinewise(editor: vscode.TextEditor, op: OperatorKind, n: num
   editor.selection = new vscode.Selection(pos, pos);
 }
 
+// ── Visual-mode operators: apply d/c/y to the live selection ────────────────
+
+/** Apply OP to the current visual selection, then return to NORMAL (except
+ * `change`, which the underlying helpers already drop into INSERT). Charwise
+ * reuses `applyCharwiseRange`; linewise reuses `applyLinewise` over the
+ * selection's whole-line span — both already handle registers, cursor
+ * landing, and the `cc`/`c` indent behavior. */
+export async function applyVisualOperator(editor: vscode.TextEditor, op: OperatorKind): Promise<void> {
+  const sel = editor.selection;
+  const linewise = getMode(editor) === Mode.VisualLine;
+
+  if (linewise) {
+    // The selection already spans full lines (reshaped on every motion), so
+    // its start/end lines are the range. Park the caret at the top line and
+    // reuse the dd/cc/yy path over that many lines.
+    const startLine = sel.start.line;
+    const n = sel.end.line - sel.start.line + 1;
+    const top = new vscode.Position(startLine, 0);
+    editor.selection = new vscode.Selection(top, top);
+    await applyLinewise(editor, op, n);
+  } else {
+    await applyCharwiseRange(editor, op, sel.start, sel.end);
+  }
+
+  if (op !== 'change') setMode(editor, Mode.Normal);
+}
+
+/** Delete/Backspace in visual mode — the requested QoL: delete the selection
+ * directly (identical to visual `d`), faster than typing `d`. Bound only in
+ * visual, so the selection is always live here. */
+export async function visualDelete(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await applyVisualOperator(editor, 'delete');
+}
+
 // ── Direct-target commands: D / C / Y (to-eol / whole-line yank) ───────────
 
 export async function deleteToEol(): Promise<void> {
@@ -220,6 +268,11 @@ export async function yankLine(): Promise<void> {
 export async function cutChar(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
+  // In visual, `x` deletes the selection (same as `d`).
+  if (isVisual(editor)) {
+    await applyVisualOperator(editor, 'delete');
+    return;
+  }
   const n = consumeCount(editor);
   const pos = editor.selection.active;
   const line = editor.document.lineAt(pos.line);
@@ -233,6 +286,11 @@ export async function cutChar(): Promise<void> {
 export async function pasteAfter(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
+  // In visual, `p` pastes OVER the selection (replace it with the register).
+  if (isVisual(editor)) {
+    await visualPasteOver(editor);
+    return;
+  }
   const { text, linewise } = getRegister();
   if (!text) return;
   if (linewise) {
@@ -292,4 +350,95 @@ export async function openAbove(): Promise<void> {
   editor.selection = new vscode.Selection(start, start);
   await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
   setMode(editor, Mode.Insert);
+}
+
+// ── More visual-mode operators (indent / join / case / paste-over) ──────────
+// Each acts on the live selection then returns to NORMAL. The indent/join/case
+// ones delegate to VS Code's own selection-aware commands — same "let the host
+// do what it does well" call as `/` → native Find.
+
+/** `>` in visual — indent the selected lines once. */
+export async function visualIndent(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await vscode.commands.executeCommand('editor.action.indentLines');
+  setMode(editor, Mode.Normal);
+}
+
+/** `<` in visual — outdent the selected lines once. */
+export async function visualOutdent(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await vscode.commands.executeCommand('editor.action.outdentLines');
+  setMode(editor, Mode.Normal);
+}
+
+/** `J` in visual — join the selected lines. */
+export async function visualJoin(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await vscode.commands.executeCommand('editor.action.joinLines');
+  setMode(editor, Mode.Normal);
+}
+
+/** `u` / `U` in visual — lowercase / uppercase the selection (real vim; note
+ * `u` here is NOT undo — that's `u` in NORMAL). */
+export async function visualLower(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await vscode.commands.executeCommand('editor.action.transformToLowercase');
+  setMode(editor, Mode.Normal);
+}
+export async function visualUpper(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await vscode.commands.executeCommand('editor.action.transformToUppercase');
+  setMode(editor, Mode.Normal);
+}
+
+/** `~` in visual — toggle the case of every character in the selection. VS
+ * Code has no native toggle-case, so this is a single explicit edit. */
+export async function visualToggleCase(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const sel = editor.selection;
+  if (sel.isEmpty) { setMode(editor, Mode.Normal); return; }
+  const text = editor.document.getText(sel);
+  const toggled = Array.from(text)
+    .map((ch) => (ch === ch.toLowerCase() ? ch.toUpperCase() : ch.toLowerCase()))
+    .join('');
+  await editor.edit((eb) => eb.replace(sel, toggled));
+  setMode(editor, Mode.Normal);
+}
+
+/** `p` in visual — replace the selection with the unnamed register, and (vim
+ * behavior) swap the replaced text back into the register. */
+async function visualPasteOver(editor: vscode.TextEditor): Promise<void> {
+  const reg = getRegister();
+  const sel = editor.selection;
+
+  if (getMode(editor) === Mode.VisualLine) {
+    const startLine = sel.start.line;
+    const endLine = sel.end.line;
+    const isLast = endLine === editor.document.lineCount - 1;
+    const beg = new vscode.Position(startLine, 0);
+    const end = isLast
+      ? editor.document.lineAt(endLine).range.end
+      : new vscode.Position(endLine + 1, 0);
+    const replaced = editor.document.getText(new vscode.Range(beg, end));
+    let content = reg.text;
+    if (content && !content.endsWith('\n') && !isLast) content += '\n';
+    await editor.edit((eb) => eb.replace(new vscode.Range(beg, end), content));
+    setRegister(replaced, true);
+    const pos = new vscode.Position(startLine, 0);
+    editor.selection = new vscode.Selection(pos, pos);
+  } else {
+    const range = new vscode.Range(sel.start, sel.end);
+    const replaced = editor.document.getText(range);
+    await editor.edit((eb) => eb.replace(range, reg.text));
+    setRegister(replaced, false);
+    editor.selection = new vscode.Selection(sel.start, sel.start);
+  }
+
+  setMode(editor, Mode.Normal);
 }

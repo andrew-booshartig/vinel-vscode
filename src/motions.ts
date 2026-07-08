@@ -1,15 +1,19 @@
 import * as vscode from 'vscode';
-import { consumeCount, repeatCommand } from './state';
+import { afterMotion, consumeCount, isVisual, repeatCommand, setActive } from './state';
 
 /**
- * Core NORMAL-mode motions — the vim-standard set, count-aware.
+ * Core motions — the vim-standard set, count-aware, shared by NORMAL and
+ * VISUAL. In visual mode the SAME motion extends the selection instead of
+ * just moving the caret: native cursor commands have a `…Select` variant
+ * (`cursorRight`→`cursorRightSelect`) and `cursorMove` takes `select: true`,
+ * so we get selection extension for free — no hand-rolled selection math.
+ * Custom motions (`0`/`^`/`{`/`}`) route through `setActive`, which extends
+ * or collapses per mode. Every motion ends with `afterMotion`, which reshapes
+ * a linewise (`V`) selection to whole lines.
  *
- * Reused wherever VSCode already has the right native command (mirrors an
- * earlier Emacs-based prototype's own philosophy: "Most POWER motions are
- * plain built-in commands... they need no wrappers" — same idea, just
- * VSCode's builtins instead of Emacs's). Custom logic only where VSCode has
- * no equivalent, or where matching REAL vim semantics (not that prototype's
- * Emacs-specific workarounds) requires it — see the `0`/`$`/`^` notes below.
+ * Reused wherever VSCode already has the right native command. Custom logic
+ * only where VSCode has no equivalent, or where matching REAL vim semantics
+ * requires it — see the `0`/`$`/`^` notes below.
  */
 
 function activeEditor(): vscode.TextEditor | undefined {
@@ -18,7 +22,10 @@ function activeEditor(): vscode.TextEditor | undefined {
 
 async function move(editor: vscode.TextEditor, command: string): Promise<void> {
   const n = consumeCount(editor);
-  await repeatCommand(command, n);
+  // In visual mode, the `…Select` variant extends the selection natively.
+  const cmd = isVisual(editor) ? command + 'Select' : command;
+  await repeatCommand(cmd, n);
+  afterMotion(editor);
 }
 
 /**
@@ -34,10 +41,16 @@ async function move(editor: vscode.TextEditor, command: string): Promise<void> {
  * `h`/`l` (below) intentionally stay on the repeat-loop: horizontal counts
  * are almost always tiny, and looping `cursorLeft`/`cursorRight` preserves
  * their exact line-wrap semantics without having to re-derive them here.
+ *
+ * In visual mode, `select: true` makes the same single call EXTEND the
+ * selection down/up by N lines — same one-round-trip speedup.
  */
-function moveVertical(editor: vscode.TextEditor, to: 'up' | 'down'): Thenable<unknown> {
+async function moveVertical(editor: vscode.TextEditor, to: 'up' | 'down'): Promise<void> {
   const n = consumeCount(editor);
-  return vscode.commands.executeCommand('cursorMove', { to, by: 'wrappedLine', value: n });
+  await vscode.commands.executeCommand('cursorMove', {
+    to, by: 'wrappedLine', value: n, select: isVisual(editor),
+  });
+  afterMotion(editor);
 }
 
 export const moveLeft = () => activeEditor() && move(activeEditor()!, 'cursorLeft');
@@ -64,7 +77,8 @@ export function lineStart(): void {
   consumeCount(editor); // 0 as a motion takes no count; keep buffer well-formed
   const line = editor.selection.active.line;
   const pos = new vscode.Position(line, 0);
-  editor.selection = new vscode.Selection(pos, pos);
+  setActive(editor, pos);
+  afterMotion(editor);
   editor.revealRange(new vscode.Range(pos, pos));
 }
 
@@ -78,7 +92,8 @@ export function firstNonBlank(): void {
   const firstNonWs = text.search(/\S/);
   const col = firstNonWs === -1 ? 0 : firstNonWs;
   const pos = new vscode.Position(line, col);
-  editor.selection = new vscode.Selection(pos, pos);
+  setActive(editor, pos);
+  afterMotion(editor);
   editor.revealRange(new vscode.Range(pos, pos));
 }
 
@@ -131,7 +146,8 @@ async function paragraphMove(direction: 1 | -1): Promise<void> {
     line = paragraphBoundary(editor.document, line, direction);
   }
   const pos = new vscode.Position(line, 0);
-  editor.selection = new vscode.Selection(pos, pos);
+  setActive(editor, pos);
+  afterMotion(editor);
   editor.revealRange(new vscode.Range(pos, pos));
 }
 

@@ -95,10 +95,52 @@ architecture here already supports them once wired up.
   what every op above reads/writes. Named registers (`a`-`z`) are a distinct,
   larger feature, not built here.
 
-**Not yet built** (future milestones): text objects (`ci"`, `da(`), VISUAL
-select mode (including a deliberate QoL deviation from strict vim — pressing
-Delete/Backspace in VISUAL mode deletes the selection directly, faster than
-`d`), marks/named registers, ex-commands, macros.
+**The modal engine — VISUAL mode (`src/operators.ts`, `src/state.ts`,
+`src/motions.ts`).** Both of vim's visual sub-modes: **`v`** charwise
+(character-by-character) and **`V`** linewise (whole lines). Because VS Code's
+`Selection` is already an `anchor`+`active` pair — exactly vim's visual model —
+and VS Code ships `…Select` command variants (`cursorRightSelect`, `cursorMove`
+with `select: true`), motions **extend the selection natively**: the same
+motion code, the same count logic (including the fast native `j`/`k` count
+path), just the Select variant when a selection is live. Operators reuse the
+Milestone-2 machinery (`applyCharwiseRange`, `applyLinewise`, the register).
+
+- **`v` / `V`** toggle and switch between each other and Normal; motions
+  (`hjkl`, `w`/`b`/`e`, `0`/`^`/`$`, `gg`/`G`, `{`/`}`, counts) extend the
+  selection. Linewise reshapes to whole lines on every motion (state.ts's
+  `afterMotion`), stable across the anchor even when you cross it.
+- **`d` / `c` / `y` / `x`** act on the selection immediately (no
+  pending-operator wait); **`p`** pastes over it; **`o`** jumps to the other
+  end. `>` / `<` indent, `J` joins, `~` / `u` / `U` change case — each returns
+  to Normal after. (`u` in visual is *lowercase*, real vim — distinct from
+  Normal `u` = undo.)
+- **Delete / Backspace delete the selection** — the one deliberate QoL
+  addition over strict vim, faster than `d`.
+- **Known simplification:** charwise selection uses VS Code's own
+  (exclusive-end) model, so it shows/affects exactly what's highlighted; real
+  vim's visual is inclusive of the cell under the cursor (one char more). Same
+  between-characters vs character-cell difference already noted for `$`,
+  deferred to that same future decision.
+
+**Input suppression (Normal + Visual behave like vim for unbound keys).** In
+vim, a key with no command in Normal mode does *nothing* — it never types.
+VS Code's default is the opposite: an unbound printable key types its
+character (and in Visual would replace the whole selection). BetterVim closes
+that with a block of no-op bindings covering every printable key (plus
+Enter/Backspace/Delete) at `betterVim.mode != 'insert'`, declared **first** so
+every real command binding — declared after — overrides it via VS Code's
+last-match-wins resolution. Net effect: only keys we've actually bound do
+anything in Normal/Visual; everything else is silent, exactly like vim. Insert
+mode is untouched (typing stays 100% native). Adding a real command later
+"wins" for free, so this needs no per-key maintenance. (`g` is deliberately
+*not* suppressed — it's the `gg` chord prefix; a lone-key binding would
+pre-empt the chord.)
+
+**Not yet built** (future milestones): text objects (`ci"`, `da(`, `vi(`),
+blockwise visual (`Ctrl-V`), marks/named registers, ex-commands, macros, and
+the broader fill-out of Normal-mode vim commands (`a`/`A`/`f`/`t`/`r`/`s`/`n`/
+`%`/`*` …) — each now safe to add incrementally, inert until bound rather than
+typing.
 
 ## Why this should avoid VSCodeVim's worst problems
 

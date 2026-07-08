@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
-import { Mode, appendDigit, consumeCount, createStatusBarItem, setMode, syncActiveEditor, zeroIsMotion } from './state';
+import {
+  Mode, afterMotion, appendDigit, consumeCount, createStatusBarItem, getMode,
+  getVisualLineAnchor, isVisual, setMode, setVisualLineAnchor, syncActiveEditor,
+  zeroIsMotion,
+} from './state';
 import * as motions from './motions';
 import * as operators from './operators';
 
@@ -32,13 +36,86 @@ function enterNormal(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
   operators.cancelPendingOperator(); // Escape cancels a half-typed d/c/y, like vim
-  setMode(editor, Mode.Normal);
+  // Leaving visual: collapse the selection back to a caret (vim's Escape).
+  if (isVisual(editor)) {
+    const pos = editor.selection.active;
+    editor.selection = new vscode.Selection(pos, pos);
+  }
+  setMode(editor, Mode.Normal); // also clears the linewise anchor
 }
 
 function enterInsert(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
   setMode(editor, Mode.Insert);
+}
+
+/** `v` — charwise visual. Toggles off if already charwise; switches from
+ * linewise to charwise (keeping the current span). */
+function enterVisual(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const m = getMode(editor);
+  if (m === Mode.Visual) { enterNormal(); return; }
+  if (m === Mode.VisualLine) { setMode(editor, Mode.Visual); return; }
+  // From Normal: anchor at the current caret; motions extend from here.
+  const pos = editor.selection.active;
+  editor.selection = new vscode.Selection(pos, pos);
+  setMode(editor, Mode.Visual);
+}
+
+/** `V` — linewise visual. Toggles off if already linewise; switches from
+ * charwise to linewise. Anchors on the selection's fixed end and reshapes to
+ * whole lines immediately. */
+function enterVisualLine(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const m = getMode(editor);
+  if (m === Mode.VisualLine) { enterNormal(); return; }
+  const anchorLine = m === Mode.Visual
+    ? editor.selection.anchor.line
+    : editor.selection.active.line;
+  setMode(editor, Mode.VisualLine);
+  setVisualLineAnchor(anchorLine);
+  afterMotion(editor); // reshape the anchor line to a full-line selection now
+}
+
+/** `o` in visual — jump the caret to the other end of the selection. */
+function swapEnds(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const m = getMode(editor);
+  if (m === Mode.Visual) {
+    const s = editor.selection;
+    editor.selection = new vscode.Selection(s.active, s.anchor);
+  } else if (m === Mode.VisualLine) {
+    const anchor = getVisualLineAnchor();
+    if (anchor === null) return;
+    const active = editor.selection.active.line;
+    setVisualLineAnchor(active);
+    const pos = new vscode.Position(anchor, 0);
+    editor.selection = new vscode.Selection(pos, pos);
+    afterMotion(editor);
+  }
+}
+
+/** `o` key — opens a line below in NORMAL, swaps selection ends in VISUAL. */
+function oKey(): void | Thenable<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  if (isVisual(editor)) { swapEnds(); return; }
+  return operators.openBelow();
+}
+
+/** No-op for any printable key with no real binding in the current
+ * (non-insert) mode: unbound keys do NOTHING instead of typing into the
+ * buffer — exactly like vim, where an undefined Normal-mode key just beeps.
+ * Real command bindings, declared AFTER the suppression block in package.json,
+ * override this wherever they apply (VS Code resolves same-key conflicts by
+ * last-match-wins). Drains a stray pending count so it can't leak. */
+function suppressKey(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) consumeCount(editor);
 }
 
 /** `0` — real vim: a motion (column 0) unless a count is already being
@@ -87,6 +164,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const commands: [string, (...args: unknown[]) => unknown][] = [
     ['betterVim.enterNormal', enterNormal],
     ['betterVim.enterInsert', enterInsert],
+    ['betterVim.enterVisual', enterVisual],
+    ['betterVim.enterVisualLine', enterVisualLine],
+    ['betterVim.suppressKey', suppressKey],
 
     ['betterVim.digit0', digitZero],
     ['betterVim.digit1', digit('1')],
@@ -128,8 +208,18 @@ export function activate(context: vscode.ExtensionContext): void {
     ['betterVim.pasteBefore', operators.pasteBefore],
     ['betterVim.openBelow', operators.openBelow],
     ['betterVim.openAbove', operators.openAbove],
+    ['betterVim.oKey', oKey],
     ['betterVim.undo', undo],
     ['betterVim.redo', redo],
+
+    // Visual-mode operators
+    ['betterVim.visualDelete', operators.visualDelete],
+    ['betterVim.visualIndent', operators.visualIndent],
+    ['betterVim.visualOutdent', operators.visualOutdent],
+    ['betterVim.visualJoin', operators.visualJoin],
+    ['betterVim.visualLower', operators.visualLower],
+    ['betterVim.visualUpper', operators.visualUpper],
+    ['betterVim.visualToggleCase', operators.visualToggleCase],
   ];
 
   for (const [id, handler] of commands) {

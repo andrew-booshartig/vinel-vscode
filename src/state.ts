@@ -5,26 +5,35 @@ import * as vscode from 'vscode';
  *
  * Uses vim's own mode names throughout, so vim users never have to translate
  * a made-up vocabulary:
- *   NORMAL — every key is a command; digits are numeric counts
- *   INSERT — a normal text editor; you just type
+ *   NORMAL      — every key is a command; digits are numeric counts
+ *   INSERT      — a normal text editor; you just type
+ *   VISUAL      — charwise selection (`v`); motions extend it
+ *   VISUAL-LINE — linewise selection (`V`); motions extend it by whole lines
  *
  * (Originally prototyped against a hand-built Emacs modal engine — "Ultra
- * Instinct" — which called these POWER/EDIT; renamed here to vim's real
- * terminology since that's the audience.)
+ * Instinct" — which called Normal/Insert POWER/EDIT; renamed here to vim's
+ * real terminology since that's the audience.)
  *
  * Mode is tracked PER EDITOR (keyed by document URI), matching real vim —
- * each buffer is independently Normal/Insert. Fresh editors default to
+ * each buffer is independently Normal/Insert/Visual. Fresh editors default to
  * NORMAL.
  */
 
 export enum Mode {
   Normal,
   Insert,
+  Visual,
+  VisualLine,
 }
 
 const modeByDocument = new Map<string, Mode>();
 let pendingCount = '';
 let pendingOperatorLabel: string | null = null;
+
+// The anchor LINE for linewise visual (`V`). Charwise visual (`v`) needs no
+// stored anchor — it rides VS Code's own selection anchor. Null outside
+// VisualLine.
+let visualLineAnchor: number | null = null;
 
 let statusBarItem: vscode.StatusBarItem;
 
@@ -40,6 +49,56 @@ export function isNormal(editor: vscode.TextEditor): boolean {
   return getMode(editor) === Mode.Normal;
 }
 
+/** Either visual sub-mode (charwise `v` or linewise `V`). */
+export function isVisual(editor: vscode.TextEditor): boolean {
+  const m = getMode(editor);
+  return m === Mode.Visual || m === Mode.VisualLine;
+}
+
+/** The anchor line for linewise visual — set by `V`, read by the reshape. */
+export function getVisualLineAnchor(): number | null {
+  return visualLineAnchor;
+}
+export function setVisualLineAnchor(line: number | null): void {
+  visualLineAnchor = line;
+}
+
+/** Move the caret to POS as a motion result, respecting the current mode:
+ * - charwise Visual → extend the selection (keep VS Code's own anchor);
+ * - Normal / VisualLine → collapse to POS (VisualLine then reshapes to full
+ *   lines in `afterMotion`, so the collapse is just a staging step).
+ * Used by the CUSTOM motions (`0`, `^`, `{`, `}`) that build a Position by
+ * hand rather than calling a native cursor command. */
+export function setActive(editor: vscode.TextEditor, pos: vscode.Position): void {
+  if (getMode(editor) === Mode.Visual) {
+    editor.selection = new vscode.Selection(editor.selection.anchor, pos);
+  } else {
+    editor.selection = new vscode.Selection(pos, pos);
+  }
+}
+
+/** Called at the end of every motion. In VisualLine it reshapes the selection
+ * to cover whole lines between the stored anchor line and the current active
+ * line; in every other mode it's a no-op (charwise `…Select` commands already
+ * produced the right selection). */
+export function afterMotion(editor: vscode.TextEditor): void {
+  if (getMode(editor) !== Mode.VisualLine) return;
+  const anchorLine = visualLineAnchor ?? editor.selection.active.line;
+  const activeLine = editor.selection.active.line;
+  const top = Math.min(anchorLine, activeLine);
+  const bot = Math.max(anchorLine, activeLine);
+  const topPos = new vscode.Position(top, 0);
+  const botPos = editor.document.lineAt(bot).range.end;
+  // Keep the caret (active) on the MOVING side so the next j/k continues in
+  // the same direction: moved down from the anchor → anchor=top, active=bot;
+  // moved up → anchor=bot, active=top. The anchor line is always the STORED
+  // `visualLineAnchor`, not VS Code's own selection anchor (which the native
+  // `…Select` commands scribble over) — that's what keeps linewise stable.
+  editor.selection = activeLine >= anchorLine
+    ? new vscode.Selection(topPos, botPos)
+    : new vscode.Selection(botPos, topPos);
+}
+
 /** Apply MODE to EDITOR: context key (gates keybindings), cursor shape,
  * status bar. Cursor COLOR (not just shape) is a known future addition —
  * it requires a global `workbench.colorCustomizations` write, which is a
@@ -49,33 +108,52 @@ export function setMode(editor: vscode.TextEditor, mode: Mode): void {
   modeByDocument.set(keyFor(editor), mode);
   pendingCount = '';
   pendingOperatorLabel = null;
+  // The linewise anchor only makes sense inside VisualLine; any other mode
+  // drops it, so it can't leak into a later, unrelated visual session.
+  if (mode !== Mode.VisualLine) visualLineAnchor = null;
   applyToEditor(editor);
 }
 
+// A STRING context key (not a boolean) — the four values gate every `when`
+// clause in package.json. 'visual'/'visual-line' were designed in from the
+// start (that's why this was a string, not the old boolean `power`).
+const CONTEXT_VALUE: Record<Mode, string> = {
+  [Mode.Normal]: 'normal',
+  [Mode.Insert]: 'insert',
+  [Mode.Visual]: 'visual',
+  [Mode.VisualLine]: 'visual-line',
+};
+
+const STATUS_LABEL: Record<Mode, string> = {
+  [Mode.Normal]: '☯ NORMAL',
+  [Mode.Insert]: '☯ INSERT',
+  [Mode.Visual]: '☯ VISUAL',
+  [Mode.VisualLine]: '☯ V-LINE',
+};
+
 function applyToEditor(editor: vscode.TextEditor): void {
   const mode = getMode(editor);
-  const isNormalMode = mode === Mode.Normal;
 
-  // A STRING context key (not a boolean) so a future VISUAL mode slots in
-  // as a third value ('visual') without another rename pass across every
-  // `when` clause in package.json.
-  vscode.commands.executeCommand('setContext', 'betterVim.mode', isNormalMode ? 'normal' : 'insert');
+  vscode.commands.executeCommand('setContext', 'betterVim.mode', CONTEXT_VALUE[mode]);
 
+  // Line cursor only while typing (Insert); block everywhere else, including
+  // both visual sub-modes — matching vim, which keeps the block cursor in
+  // visual. Cursor COLOR is a known future addition (needs a global
+  // colorCustomizations write); shape is the per-editor-safe signal for now.
   editor.options = {
     ...editor.options,
-    cursorStyle: isNormalMode
-      ? vscode.TextEditorCursorStyle.Block
-      : vscode.TextEditorCursorStyle.Line,
+    cursorStyle: mode === Mode.Insert
+      ? vscode.TextEditorCursorStyle.Line
+      : vscode.TextEditorCursorStyle.Block,
   };
 
   renderStatusBar(mode);
 }
 
 function renderStatusBar(mode: Mode): void {
-  const label = mode === Mode.Normal ? '☯ NORMAL' : '☯ INSERT';
   const count = pendingCount ? ` ${pendingCount}` : '';
   const op = pendingOperatorLabel ? ` ${pendingOperatorLabel}…` : '';
-  statusBarItem.text = label + count + op;
+  statusBarItem.text = STATUS_LABEL[mode] + count + op;
   statusBarItem.show();
 }
 
