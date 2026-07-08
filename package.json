@@ -339,6 +339,18 @@
       {
         "command": "betterVim.provideChar",
         "title": "BetterVim: (internal) supply pending char"
+      },
+      {
+        "command": "betterVim.iKey",
+        "title": "BetterVim: Insert / inner text object (i)"
+      },
+      {
+        "command": "betterVim.aKey",
+        "title": "BetterVim: Append / around text object (a)"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "title": "BetterVim: (internal) supply text object"
       }
     ],
     "keybindings": [
@@ -847,14 +859,14 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "betterVim.enterInsert",
+        "command": "betterVim.iKey",
         "key": "i",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && betterVim.mode != 'insert'"
       },
       {
-        "command": "betterVim.append",
+        "command": "betterVim.aKey",
         "key": "a",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && betterVim.mode != 'insert'"
       },
       {
         "command": "betterVim.appendEol",
@@ -1870,6 +1882,102 @@
         "key": "space",
         "when": "editorTextFocus && betterVim.awaitingChar",
         "args": " "
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "w",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "word"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+w",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "WORD"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+9",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "paren"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+0",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "paren"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "b",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "paren"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+[",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "brace"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+]",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "brace"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+b",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "brace"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "[",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "bracket"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "]",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "bracket"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+,",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "angle"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+.",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "angle"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "shift+'",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "dquote"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "'",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "squote"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "`",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "backtick"
+      },
+      {
+        "command": "betterVim.provideTextObject",
+        "key": "p",
+        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "args": "paragraph"
       }
     ]
   },

@@ -35,8 +35,9 @@ import * as operators from './operators';
 function enterNormal(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
-  operators.cancelPendingOperator(); // Escape cancels a half-typed d/c/y, like vim
-  operators.cancelPendingChar();     // …and a half-typed f/t/r
+  operators.cancelPendingOperator();   // Escape cancels a half-typed d/c/y, like vim
+  operators.cancelPendingChar();       // …and a half-typed f/t/r
+  operators.cancelPendingTextObject(); // …and a half-typed i/a text object
   // Leaving visual: collapse the selection back to a caret (vim's Escape).
   if (isVisual(editor)) {
     const pos = editor.selection.active;
@@ -80,6 +81,30 @@ function insertFirstNonBlank(): void {
   const p = new vscode.Position(line.lineNumber, i === -1 ? 0 : i);
   editor.selection = new vscode.Selection(p, p);
   setMode(editor, Mode.Insert);
+}
+
+/** `i` — context-dependent: a text-object prefix (inner) when an operator is
+ * pending (`diw`) or in Visual (`viw`); otherwise enter INSERT. */
+function iKey(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  if (operators.hasPendingOperator() || isVisual(editor)) {
+    operators.textObjectStart(false);
+  } else {
+    enterInsert();
+  }
+}
+
+/** `a` — context-dependent: a text-object prefix (around) when an operator is
+ * pending (`daw`) or in Visual (`vaw`); otherwise append. */
+function aKey(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  if (operators.hasPendingOperator() || isVisual(editor)) {
+    operators.textObjectStart(true);
+  } else {
+    append();
+  }
 }
 
 /** `v` — charwise visual. Toggles off if already charwise; switches from
@@ -253,7 +278,10 @@ export function activate(context: vscode.ExtensionContext): void {
     ['betterVim.visualUpper', operators.visualUpper],
     ['betterVim.visualToggleCase', operators.visualToggleCase],
 
-    // Insert-entry variants
+    // Insert-entry variants + text-object prefixes
+    ['betterVim.iKey', iKey],
+    ['betterVim.aKey', aKey],
+    ['betterVim.provideTextObject', operators.provideTextObject],
     ['betterVim.append', append],
     ['betterVim.appendEol', appendEol],
     ['betterVim.insertFirstNonBlank', insertFirstNonBlank],

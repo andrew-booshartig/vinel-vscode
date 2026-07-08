@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingOperatorLabel } from './state';
 import { setRegister, getRegister } from './registers';
+import { textObjectRange, type TextObjectId } from './textobjects';
 
 /**
  * Vim's operator grammar: `[count1] operator [count2] motion`, where the
@@ -691,4 +692,68 @@ export function repeatFind(reverse: boolean) {
     await doFind(editor, kind, original.char, count, operator);
     lastFind = original; // doFind overwrote it; keep the canonical find
   };
+}
+
+// ── Text objects (iw/aw, i"/a", i(/a(, ip/ap …) ─────────────────────────────
+// `i`/`a` after an operator (diw) or in Visual (viw) begin a text object; the
+// next key names it, via the provideTextObject layer (same await-a-keystroke
+// pattern as find-char). The span itself comes from the pure engine in
+// textobjects.ts; here we just capture context and apply.
+
+let pendingTextObject: { around: boolean; operator: OperatorKind | null } | null = null;
+
+function setAwaitingTextObject(on: boolean): void {
+  vscode.commands.executeCommand('setContext', 'betterVim.awaitingTextObject', on);
+}
+
+/** Clear a half-typed text object (Escape). */
+export function cancelPendingTextObject(): void {
+  pendingTextObject = null;
+  setAwaitingTextObject(false);
+}
+
+/** `i` (inner) / `a` (around) in operator-pending or Visual context. Captures
+ * any pending operator, then waits for the object key. */
+export function textObjectStart(around: boolean): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  const operator = pendingOperator;
+  if (operator) cancelPendingOperator();
+  // Count on text objects (`2iw`) isn't applied yet — drain it so it can't
+  // leak into the next command.
+  consumeCount(editor);
+  pendingTextObject = { around, operator };
+  setAwaitingTextObject(true);
+}
+
+/** The object key after `i`/`a` (delivered as arg): compute the span via the
+ * engine and apply it — operator over the range, or set the Visual selection. */
+export async function provideTextObject(id?: unknown): Promise<void> {
+  const editor = activeEditor();
+  const pt = pendingTextObject;
+  pendingTextObject = null;
+  setAwaitingTextObject(false);
+  if (!editor || !pt || typeof id !== 'string') return;
+
+  const result = textObjectRange(editor.document, editor.selection.active, id as TextObjectId, pt.around);
+  if (!result) return; // no such object under the cursor → no-op, like vim
+
+  if (pt.operator) {
+    if (result.linewise) {
+      // Route linewise objects (ip/ap) through the dd/cc/yy path so registers
+      // and cc-indent behave correctly.
+      const startLine = result.range.start.line;
+      let endLine = result.range.end.line;
+      if (result.range.end.character === 0 && endLine > startLine) endLine -= 1;
+      const top = new vscode.Position(startLine, 0);
+      editor.selection = new vscode.Selection(top, top);
+      await applyLinewise(editor, pt.operator, endLine - startLine + 1);
+    } else {
+      await applyCharwiseRange(editor, pt.operator, result.range.start, result.range.end);
+    }
+    return;
+  }
+
+  // Visual: set the selection to the object span.
+  editor.selection = new vscode.Selection(result.range.start, result.range.end);
 }

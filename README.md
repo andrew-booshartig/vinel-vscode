@@ -158,10 +158,25 @@ motions) Visual-aware:
   center/top/bottom via `revealLine`).
 - **Line ops in Normal:** `J` join, `~` toggle-case, `>>` / `<<` indent/outdent.
 
-**Not yet built** (future milestones): text objects (`ciw`, `ci"`, `da(`,
-`vi(`), dot-repeat `.`, macros (likely delegate to the `kb-macro` extension),
-marks (`m`/`` ` ``/`'`), named registers (`"a`), ex-commands (`:`, `:%s/` →
-native find/replace), blockwise visual (`Ctrl-V`), replace mode `R`, and
+**The modal engine — text objects (`src/textobjects.ts`).** `i` (inner) / `a`
+(around) after an operator or in Visual: `ciw`, `daw`, `di"`, `ca(`, `yi{`,
+`vip`, … The span comes from a pure range engine (`textObjectRange`) — easy to
+test, no VS Code commands — and is applied through the same
+`applyCharwiseRange`/`applyLinewise` path everything else uses.
+
+- **Objects:** `iw`/`aw` word, `iW`/`aW` WORD, `i"`/`i'`/`` i` `` quotes,
+  `i(`/`ib` `i{`/`iB` `i[` `i<` bracket pairs (balanced, multi-line), `ip`/`ap`
+  paragraph — each inner and around.
+- **Input:** `i`/`a` are context-dependent — a text-object prefix when an
+  operator is pending (`diw`) or in Visual (`viw`), otherwise plain
+  Insert/append. The object key arrives via a `betterVim.awaitingTextObject`
+  keystroke layer (the same await-a-keystroke pattern as find-char), so no
+  `type` hijack. Off any object (`ci"` with no quotes) it's a no-op, like vim.
+
+**Not yet built** (future milestones): dot-repeat `.`, macros (likely delegate
+to the `kb-macro` extension), marks (`m`/`` ` ``/`'`), named registers (`"a`),
+ex-commands (`:`, `:%s/` → native find/replace), blockwise visual (`Ctrl-V`),
+replace mode `R`, tag/sentence text objects (`it`/`at`, `is`/`as`), and
 `>{motion}` as a full indent operator. Each is safe to add incrementally —
 inert until bound, never typing.
 
