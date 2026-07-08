@@ -3,19 +3,23 @@ import * as vscode from 'vscode';
 /**
  * Mode + digit-count state — the foundation everything else builds on.
  *
- * Ported from the Emacs "Ultra Instinct" engine (ultra-instinct.el):
- *   POWER (yang) — every key is a command; digits are numeric counts
- *   EDIT  (yin)  — a normal text editor; you just type
+ * Uses vim's own mode names throughout, so vim users never have to translate
+ * a made-up vocabulary:
+ *   NORMAL — every key is a command; digits are numeric counts
+ *   INSERT — a normal text editor; you just type
  *
- * Mode is tracked PER EDITOR (keyed by document URI), matching both real vim
- * (each buffer is independently Normal/Insert) and the Emacs source (a
- * buffer-local minor mode). Fresh editors default to POWER, mirroring
- * `ultra-default-to-power`.
+ * (Originally prototyped against a hand-built Emacs modal engine — "Ultra
+ * Instinct" — which called these POWER/EDIT; renamed here to vim's real
+ * terminology since that's the audience.)
+ *
+ * Mode is tracked PER EDITOR (keyed by document URI), matching real vim —
+ * each buffer is independently Normal/Insert. Fresh editors default to
+ * NORMAL.
  */
 
 export enum Mode {
-  Power,
-  Edit,
+  Normal,
+  Insert,
 }
 
 const modeByDocument = new Map<string, Mode>();
@@ -29,11 +33,11 @@ function keyFor(editor: vscode.TextEditor): string {
 }
 
 export function getMode(editor: vscode.TextEditor): Mode {
-  return modeByDocument.get(keyFor(editor)) ?? Mode.Power;
+  return modeByDocument.get(keyFor(editor)) ?? Mode.Normal;
 }
 
-export function isPower(editor: vscode.TextEditor): boolean {
-  return getMode(editor) === Mode.Power;
+export function isNormal(editor: vscode.TextEditor): boolean {
+  return getMode(editor) === Mode.Normal;
 }
 
 /** Apply MODE to EDITOR: context key (gates keybindings), cursor shape,
@@ -50,13 +54,16 @@ export function setMode(editor: vscode.TextEditor, mode: Mode): void {
 
 function applyToEditor(editor: vscode.TextEditor): void {
   const mode = getMode(editor);
-  const isPowerMode = mode === Mode.Power;
+  const isNormalMode = mode === Mode.Normal;
 
-  vscode.commands.executeCommand('setContext', 'ultraInstinct.power', isPowerMode);
+  // A STRING context key (not a boolean) so a future VISUAL mode slots in
+  // as a third value ('visual') without another rename pass across every
+  // `when` clause in package.json.
+  vscode.commands.executeCommand('setContext', 'betterVim.mode', isNormalMode ? 'normal' : 'insert');
 
   editor.options = {
     ...editor.options,
-    cursorStyle: isPowerMode
+    cursorStyle: isNormalMode
       ? vscode.TextEditorCursorStyle.Block
       : vscode.TextEditorCursorStyle.Line,
   };
@@ -65,7 +72,7 @@ function applyToEditor(editor: vscode.TextEditor): void {
 }
 
 function renderStatusBar(mode: Mode): void {
-  const label = mode === Mode.Power ? '☯ POWER' : '☯ EDIT';
+  const label = mode === Mode.Normal ? '☯ NORMAL' : '☯ INSERT';
   const count = pendingCount ? ` ${pendingCount}` : '';
   const op = pendingOperatorLabel ? ` ${pendingOperatorLabel}…` : '';
   statusBarItem.text = label + count + op;
@@ -82,7 +89,9 @@ export function setPendingOperatorLabel(label: string | null): void {
 }
 
 /** Called whenever focus moves to a different editor — re-apply that
- * editor's own remembered mode (context key, cursor, status bar). */
+ * editor's own remembered mode (context key, cursor, status bar). Never
+ * touches cursor POSITION, only presentation — switching tabs can't cause
+ * an unwanted cursor jump. */
 export function syncActiveEditor(editor: vscode.TextEditor | undefined): void {
   if (!editor) {
     statusBarItem.hide();
@@ -91,7 +100,7 @@ export function syncActiveEditor(editor: vscode.TextEditor | undefined): void {
   applyToEditor(editor);
 }
 
-// ── Digit-count buffer (POWER's "2000 <right>", vim's real 0 vs count) ─────
+// ── Digit-count buffer (NORMAL's "2000 <right>", vim's real 0 vs count) ────
 // Real vim: `0` with no count yet pending means "column 0" (a motion);
 // `0` AFTER at least one digit is already buffered means "append to the
 // count" (so `50` is a count of 50, not "5, then column 0"). Every OTHER
@@ -109,7 +118,7 @@ export function zeroIsMotion(): boolean {
 }
 
 /** Read the pending count (default 1) and clear the buffer. Call this from
- * every POWER motion/command exactly once, after digits, so the count
+ * every NORMAL-mode motion/command exactly once, after digits, so the count
  * applies to the NEXT command and resets afterward — matching vim. */
 export function consumeCount(editor: vscode.TextEditor): number {
   const n = pendingCount === '' ? 1 : parseInt(pendingCount, 10);

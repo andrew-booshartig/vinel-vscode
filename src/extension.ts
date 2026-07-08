@@ -4,17 +4,23 @@ import * as motions from './motions';
 import * as operators from './operators';
 
 /**
- * Ultra Instinct — ground-up modal editing engine for VSCode. Not a Vim
- * emulation: those consistently fight VSCode's own engine at the edges
- * (snippets, suggestions, brackets). This is a real port of a from-scratch
- * modal editor (POWER/EDIT modes), following standard vim semantics as the
- * target — the Emacs source (ultra-instinct.el et al.) is a REFERENCE for
- * mechanism, not a spec to copy verbatim, since some of its choices exist
- * only to work around Emacs-specific constraints (see motions.ts's note on
- * `0`/`,`). Where VSCode already does something excellently (its own Find,
- * its own cursor-move commands, undo/redo), this uses that directly rather
- * than reimplementing vim on top of it — the same call the Emacs port made
- * keeping native isearch instead of a hand-built vim search.
+ * BetterVim — a native modal-editing state machine for VSCode. Not an
+ * emulation (VSCodeVim: hijacks the `type` command to parse every keystroke
+ * through the extension host, then re-syncs a shadow undo tree against
+ * VS Code's own — the root cause behind its two most-upvoted complaints:
+ * lag/dropped-keystrokes and `u` undoing the wrong thing) and not a Neovim
+ * bridge (vscode-neovim: two engines fighting over one buffer, chronic
+ * desync). NORMAL-mode keys are discrete `contributes.keybindings`, each
+ * routed straight to a specific command; INSERT mode has zero custom
+ * keybindings — typing is 100% native VS Code, never touched.
+ *
+ * Follows standard vim semantics as the target, not a verbatim port of any
+ * prior prototype's own choices (an earlier Emacs-based prototype's `0`/`,`
+ * split, for instance, only existed to work around an Emacs-specific
+ * constraint — see motions.ts). Where VS Code already does something
+ * excellently (its own Find, cursor-move commands, undo/redo), this uses
+ * that directly rather than reimplementing vim on top of it — e.g. `/` opens
+ * VS Code's own Find instead of a hand-built vim search.
  *
  * package.json also contributes a general keybinding fix: `tabout`'s own
  * default binding doesn't exclude `inSnippetMode`, so it can hijack Tab away
@@ -22,17 +28,17 @@ import * as operators from './operators';
  * — see the `contributes.keybindings` block.
  */
 
-function enterPower(): void {
+function enterNormal(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
   operators.cancelPendingOperator(); // Escape cancels a half-typed d/c/y, like vim
-  setMode(editor, Mode.Power);
+  setMode(editor, Mode.Normal);
 }
 
-function enterEdit(): void {
+function enterInsert(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
-  setMode(editor, Mode.Edit);
+  setMode(editor, Mode.Insert);
 }
 
 /** `0` — real vim: a motion (column 0) unless a count is already being
@@ -79,51 +85,51 @@ export function activate(context: vscode.ExtensionContext): void {
   syncActiveEditor(vscode.window.activeTextEditor);
 
   const commands: [string, (...args: unknown[]) => unknown][] = [
-    ['ultraInstinct.enterPower', enterPower],
-    ['ultraInstinct.enterEdit', enterEdit],
+    ['betterVim.enterNormal', enterNormal],
+    ['betterVim.enterInsert', enterInsert],
 
-    ['ultraInstinct.digit0', digitZero],
-    ['ultraInstinct.digit1', digit('1')],
-    ['ultraInstinct.digit2', digit('2')],
-    ['ultraInstinct.digit3', digit('3')],
-    ['ultraInstinct.digit4', digit('4')],
-    ['ultraInstinct.digit5', digit('5')],
-    ['ultraInstinct.digit6', digit('6')],
-    ['ultraInstinct.digit7', digit('7')],
-    ['ultraInstinct.digit8', digit('8')],
-    ['ultraInstinct.digit9', digit('9')],
+    ['betterVim.digit0', digitZero],
+    ['betterVim.digit1', digit('1')],
+    ['betterVim.digit2', digit('2')],
+    ['betterVim.digit3', digit('3')],
+    ['betterVim.digit4', digit('4')],
+    ['betterVim.digit5', digit('5')],
+    ['betterVim.digit6', digit('6')],
+    ['betterVim.digit7', digit('7')],
+    ['betterVim.digit8', digit('8')],
+    ['betterVim.digit9', digit('9')],
 
-    ['ultraInstinct.moveLeft', motions.moveLeft],
-    ['ultraInstinct.moveRight', motions.moveRight],
-    ['ultraInstinct.moveUp', motions.moveUp],
-    ['ultraInstinct.moveDown', motions.moveDown],
+    ['betterVim.moveLeft', motions.moveLeft],
+    ['betterVim.moveRight', motions.moveRight],
+    ['betterVim.moveUp', motions.moveUp],
+    ['betterVim.moveDown', motions.moveDown],
     // w/b/e double as operator targets (dw/cw/yw) — see operators.ts's note on
     // why these route through operatorAwareWordMotion instead of calling
     // motions.wordForward() etc. directly (count-multiplication semantics).
-    ['ultraInstinct.wordForward', operators.operatorAwareWordMotion('cursorWordStartRight')],
-    ['ultraInstinct.wordBackward', operators.operatorAwareWordMotion('cursorWordStartLeft')],
-    ['ultraInstinct.wordEnd', operators.operatorAwareWordMotion('cursorWordEndRight')],
-    ['ultraInstinct.firstNonBlank', motions.firstNonBlank],
-    ['ultraInstinct.lineEnd', motions.lineEnd],
-    ['ultraInstinct.bufferTop', motions.bufferTop],
-    ['ultraInstinct.bufferBottom', motions.bufferBottom],
-    ['ultraInstinct.paragraphBackward', motions.paragraphBackward],
-    ['ultraInstinct.paragraphForward', motions.paragraphForward],
-    ['ultraInstinct.search', motions.search],
+    ['betterVim.wordForward', operators.operatorAwareWordMotion('cursorWordStartRight')],
+    ['betterVim.wordBackward', operators.operatorAwareWordMotion('cursorWordStartLeft')],
+    ['betterVim.wordEnd', operators.operatorAwareWordMotion('cursorWordEndRight')],
+    ['betterVim.firstNonBlank', motions.firstNonBlank],
+    ['betterVim.lineEnd', motions.lineEnd],
+    ['betterVim.bufferTop', motions.bufferTop],
+    ['betterVim.bufferBottom', motions.bufferBottom],
+    ['betterVim.paragraphBackward', motions.paragraphBackward],
+    ['betterVim.paragraphForward', motions.paragraphForward],
+    ['betterVim.search', motions.search],
 
-    ['ultraInstinct.opDelete', operators.operatorKey('delete')],
-    ['ultraInstinct.opChange', operators.operatorKey('change')],
-    ['ultraInstinct.opYank', operators.operatorKey('yank')],
-    ['ultraInstinct.deleteToEol', operators.deleteToEol],
-    ['ultraInstinct.changeToEol', operators.changeToEol],
-    ['ultraInstinct.yankLine', operators.yankLine],
-    ['ultraInstinct.cutChar', operators.cutChar],
-    ['ultraInstinct.pasteAfter', operators.pasteAfter],
-    ['ultraInstinct.pasteBefore', operators.pasteBefore],
-    ['ultraInstinct.openBelow', operators.openBelow],
-    ['ultraInstinct.openAbove', operators.openAbove],
-    ['ultraInstinct.undo', undo],
-    ['ultraInstinct.redo', redo],
+    ['betterVim.opDelete', operators.operatorKey('delete')],
+    ['betterVim.opChange', operators.operatorKey('change')],
+    ['betterVim.opYank', operators.operatorKey('yank')],
+    ['betterVim.deleteToEol', operators.deleteToEol],
+    ['betterVim.changeToEol', operators.changeToEol],
+    ['betterVim.yankLine', operators.yankLine],
+    ['betterVim.cutChar', operators.cutChar],
+    ['betterVim.pasteAfter', operators.pasteAfter],
+    ['betterVim.pasteBefore', operators.pasteBefore],
+    ['betterVim.openBelow', operators.openBelow],
+    ['betterVim.openAbove', operators.openAbove],
+    ['betterVim.undo', undo],
+    ['betterVim.redo', redo],
   ];
 
   for (const [id, handler] of commands) {

@@ -2,14 +2,14 @@ import * as vscode from 'vscode';
 import { consumeCount, repeatCommand } from './state';
 
 /**
- * Core POWER-mode motions — the vim-standard set, count-aware.
+ * Core NORMAL-mode motions — the vim-standard set, count-aware.
  *
- * Reused wherever VSCode already has the right native command (mirrors the
- * Emacs source's own philosophy: "Most POWER motions are plain built-in
- * commands... they need no wrappers" — same idea, just VSCode's builtins
- * instead of Emacs's). Custom logic only where VSCode has no equivalent, or
- * where matching REAL vim semantics (not the Emacs port's Emacs-specific
- * workarounds) requires it — see the `0`/`$`/`^` notes below.
+ * Reused wherever VSCode already has the right native command (mirrors an
+ * earlier Emacs-based prototype's own philosophy: "Most POWER motions are
+ * plain built-in commands... they need no wrappers" — same idea, just
+ * VSCode's builtins instead of Emacs's). Custom logic only where VSCode has
+ * no equivalent, or where matching REAL vim semantics (not that prototype's
+ * Emacs-specific workarounds) requires it — see the `0`/`$`/`^` notes below.
  */
 
 function activeEditor(): vscode.TextEditor | undefined {

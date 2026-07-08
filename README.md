@@ -1,10 +1,9 @@
-# Ultra Instinct
+# BetterVim
 
-A ground-up modal editing engine for VSCode. Not a Vim emulation — vim
-emulations always end up fighting VSCode's own engine at the edges (snippets,
-suggestions, brackets). This is meant to feel native.
-
-Ported from a heavily custom Emacs modal setup (POWER/EDIT modes).
+A native modal-editing state machine for VSCode. Not an emulation, and not a
+Neovim bridge — the two existing approaches, and the two root causes behind
+nearly every real, verified complaint about them (see "Why this should avoid
+VSCodeVim's worst problems" below).
 
 ## What's here so far
 
@@ -25,27 +24,26 @@ snippet's brace" — is a personal workflow detail, not general modal-editor
 behavior, and lives outside this repo.)
 
 **The modal engine — Milestone 1 (`src/state.ts`, `src/motions.ts`,
-`src/extension.ts`).** POWER/EDIT modes, following standard vim semantics as
-the target — the Emacs source (`ultra-instinct.el` et al.) is a reference for
-*mechanism*, not a spec to copy verbatim, since some of its choices exist only
-to work around Emacs-specific constraints (see the `0`/`$`/`^` notes in
-`motions.ts`). Where VSCode already does something excellently, this uses it
-directly rather than reimplementing vim on top of it — the same call the
-Emacs port made keeping native `isearch` instead of hand-building vim search;
-here `/` opens VSCode's own Find.
+`src/extension.ts`).** NORMAL/INSERT modes — vim's own names, not an invented
+vocabulary — following standard vim semantics as the target. (An earlier
+Emacs-based prototype used its own POWER/EDIT terminology and had a few
+Emacs-specific workarounds baked in — e.g. its `0`/`,` split; that prototype
+is a reference for *mechanism*, not a spec copied verbatim — see the `0`/`$`/
+`^` notes in `motions.ts`.) Where VSCode already does something excellently,
+this uses it directly rather than reimplementing vim on top of it — `/` opens
+VSCode's own native Find instead of a hand-built vim search.
 
 - **Mode state**, per editor (like real vim — each buffer is independently
-  Normal/Insert): context key (`ultraInstinct.power`), status-bar indicator,
-  cursor shape sync (block ↔ line). Fresh editors default to POWER.
-- **Escape → POWER** (spammable), **`i` → EDIT** while in POWER.
+  Normal/Insert): a string context key (`betterVim.mode`, `'normal'` |
+  `'insert'`), status-bar indicator, cursor shape sync (block ↔ line). Fresh
+  editors default to NORMAL.
+- **Escape → NORMAL** (spammable), **`i` → INSERT** while in NORMAL.
 - **Digit-count prefix system** — VSCode has no built-in equivalent to
   Emacs's numeric prefix-arg, so this is hand-built: digits buffer into a
   pending count, shown in the status bar, consumed by the next motion
   (`5j` moves down 5 lines) and reset after. `0` is real vim: a motion
   (column 0) unless a count is already in progress, in which case it extends
-  the count — matching vim exactly, not the Emacs port's `,`/`.` workaround
-  (that only existed because Emacs's `suppress-keymap` hard-claims every
-  digit; VSCode has no such constraint).
+  the count.
 - **Core motions**, all count-aware: `h j k l` + arrows, `w b e` (word),
   `0 ^ $` (line), `g g` / `G` (buffer top/bottom), `{` / `}` (paragraph,
   vim's own blank-line-boundary definition — VSCode has no built-in for
@@ -58,10 +56,6 @@ model VSCode/Emacs both use (`$` = `cursorEnd`, lands after the last char).
 Adopting the full character-cell model would touch nearly every motion —
 worth its own deliberate decision later, not bundled in silently here.
 
-**Not yet ported** (future milestones): operators (`c`/`d`/`y` × line/word/
-text-object/selection), VISUAL select mode, marks/registers, the SPC leader
-system.
-
 **The modal engine — Milestone 2 (`src/operators.ts`, `src/registers.ts`).**
 Vim's operator grammar: `[count1] operator [count2] motion` — the effective
 repeat is count1 × count2 (`2d3w` deletes 6 words), or a doubled operator
@@ -73,10 +67,15 @@ architecture here already supports them once wired up.
 - **`d` / `c` / `y`** — open a pending operator (status bar shows e.g. `d…`),
   cancelled by Escape.
 - **`dd` / `cc` / `yy`** — N whole lines. Delete/yank remove them entirely;
-  `cc` instead empties down to ONE line (keeping the first line's
-  indentation) and drops into EDIT — real vim's `cc`, verified against an
-  offset-based splice simulation (11/11 cases: first/middle/last line,
-  multi-line counts, the true-end-of-buffer edge case, single-line docs).
+  `cc` instead empties down to ONE line and re-indents it via VS Code's own
+  language-aware indenter (the same mechanism `o`/`O` use below) before
+  dropping into INSERT — matching real vim's `cc` even on an already-blank
+  line inside an indented block, which a naive "copy the target line's own
+  whitespace" approach gets wrong (that line has none to copy). Verified pre-
+  reindent range math against an offset-based splice simulation (16/16 cases
+  across both milestones' fixes: first/middle/last line, multi-line counts,
+  the true-end-of-buffer edge case, single-line docs, and the blank-line-in-
+  a-block case specifically).
 - **`dw` / `cw` / `yw`** — word-target, via the raw cursor-move command run
   `count1 × count2` times (not composed from the plain-motion functions,
   which each consume their own count once and would double-count if reused
@@ -87,18 +86,73 @@ architecture here already supports them once wired up.
 - **`x`** — cut N characters. **`p` / `P`** — paste after/before, register-
   aware: a linewise register (from `dd`/`yy`) pastes as new line(s); a
   charwise one (`dw`/`x`) pastes inline.
-- **`o` / `O`** — open a line below/above, auto-indent, drop into EDIT.
+- **`o` / `O`** — open a line below/above, auto-indent, drop into INSERT.
 - **`u` / `Ctrl+R`** — VSCode's native undo/redo directly.
 - **The unnamed register** (`registers.ts`) — vim's default `"` register,
   what every op above reads/writes. Named registers (`a`-`z`) are a distinct,
   larger feature, not built here.
+
+**Not yet built** (future milestones): text objects (`ci"`, `da(`), VISUAL
+select mode (including a deliberate QoL deviation from strict vim — pressing
+Delete/Backspace in VISUAL mode deletes the selection directly, faster than
+`d`), marks/named registers, ex-commands, macros.
+
+## Why this should avoid VSCodeVim's worst problems
+
+Researched against VSCodeVim's own GitHub issue tracker (real issue titles
+and vote counts, not secondhand summaries) plus a from-scratch architectural
+analysis. These are locked-in design invariants, not incidental — they're
+the actual reason a native state machine should sidestep the community's
+most-upvoted complaints, and they need to stay true as more gets built:
+
+- **Never hijack the `type` command.** VSCodeVim's approach — parsing every
+  keystroke through the extension host before it reaches the screen — is the
+  root cause behind its top complaints: typing lag, dropped keystrokes on
+  large files, and broken IME/CJK composition. NORMAL-mode keys here are
+  discrete `contributes.keybindings`, each routed straight to one specific
+  command; INSERT mode has **zero** custom keybindings — typing is 100%
+  native VS Code, untouched, so none of that class of bug can occur.
+- **Never build a shadow undo/text model.** "Pressing `u` will undo all the
+  stack" is VSCodeVim's single most-upvoted open issue (177 votes) — a
+  desynced shadow undo tree. `undo`/`redo` here call VS Code's own commands
+  directly; there is no parallel undo history to fall out of sync.
+- **Multi-count operators are already atomic.** `3dd`/`2d3w` compute the full
+  target range *before* editing, so each is exactly one `editor.edit()` call
+  = one undo entry — pressing `u` once undoes the whole thing.
+- **Macro requirement (future milestone, not built yet, but locked in now):**
+  when macro replay is built, it must batch every edit into a single undo
+  transaction using `editor.edit()`'s `undoStopBefore`/`undoStopAfter` flags
+  — only the first edit in a replay gets a normal undo-stop-before, only the
+  last a normal undo-stop-after, everything between suppresses both — so `u`
+  after a macro undoes the whole macro in one step, not one sub-edit at a
+  time. Written down here specifically because "macro replay breaks undo" is
+  the exact failure mode behind VSCodeVim's #1 complaint, and it's much
+  easier to get right from day one than to retrofit.
+- **Scoped strictly to `editorTextFocus`.** Every keybinding is gated on it,
+  and mouse events are never touched — the sidebar, file tree, breadcrumbs,
+  and mouse-driven cursor placement are structurally untouched, unlike
+  VSCodeVim's reported breakage there. Staying scoped this way (not
+  extending `hjkl` into the tree/sidebar) is an **intentional non-goal**,
+  not an oversight — that kind of overreach is exactly what causes those
+  complaints.
+- **Native goal-column tracking for free.** `moveUp`/`moveDown` call VS
+  Code's own `cursorUp`/`cursorDown` directly rather than reimplementing
+  cursor movement, so "cursor loses its column moving through uneven lines"
+  isn't a bug class that can occur here.
+- **Mode state never touches cursor position.** Switching tabs re-applies
+  the target editor's remembered mode (context key, cursor style, status
+  bar) but never moves the cursor — "cursor jumps to start of file after
+  switching tabs" isn't reachable by this code path.
+- **Ex-commands** (future milestone), when built, will delegate to VS Code's
+  native find/replace-with-regex rather than a hand-rolled vim-regex
+  translator — the same precedent as `/` → `actions.find` here already.
 
 ## ⚠️ Testing this requires VSCodeVim disabled
 
 VSCodeVim is very likely still installed and active in your VSCode profile.
 It claims the exact same keys this extension does (`h j k l i` Escape,
 digits…) via its own `vim.mode` context, completely independent of this
-extension's `ultraInstinct.power` context — so with both active, the same
+extension's `betterVim.mode` context — so with both active, the same
 keypress can satisfy two unrelated extensions' keybindings at once, and which
 one actually fires becomes unpredictable. Disable or uninstall VSCodeVim
 before testing:
@@ -116,5 +170,5 @@ side-by-side, but not both live in the same window at the same time.)
 npm install
 npm run compile
 npm run package        # produces a .vsix
-code --install-extension ultra-instinct-0.0.1.vsix --force
+code --install-extension bettervim-0.0.1.vsix --force
 ```

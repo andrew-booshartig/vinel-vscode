@@ -114,14 +114,14 @@ async function applyCharwiseRange(
   }
   await editor.edit((eb) => eb.delete(range));
   editor.selection = new vscode.Selection(beg, beg);
-  if (op === 'change') setMode(editor, Mode.Edit);
+  if (op === 'change') setMode(editor, Mode.Insert);
 }
 
 /** `dd` / `cc` / `yy` — N whole lines from the cursor's line. Delete/yank
  * remove the lines entirely (newlines included); change instead empties
- * the lines down to ONE, re-using the first line's indentation, and drops
- * into EDIT — matching real vim's `cc`, not a strict "delete then normal
- * delete-semantics" pass. */
+ * the lines down to ONE, re-indents it correctly, and drops into INSERT —
+ * matching real vim's `cc`, not a strict "delete then normal delete-
+ * semantics" pass. */
 async function applyLinewise(editor: vscode.TextEditor, op: OperatorKind, n: number): Promise<void> {
   const doc = editor.document;
   const startLine = editor.selection.active.line;
@@ -139,13 +139,22 @@ async function applyLinewise(editor: vscode.TextEditor, op: OperatorKind, n: num
   if (op === 'yank') return; // cursor stays put
 
   if (op === 'change') {
-    const firstLine = doc.lineAt(startLine).text;
-    const indent = firstLine.match(/^[ \t]*/)?.[0] ?? '';
-    const replacement = isLastLine ? indent : indent + '\n';
+    // Leave ONE truly empty line, then ask VS Code's own language-aware
+    // indenter to fill it in — not a naive copy of the target line's own
+    // literal whitespace, which is wrong exactly when it matters most: `cc`
+    // on an ALREADY-BLANK line (e.g. inside an indented block) has zero
+    // whitespace to copy, so the naive approach left the new line
+    // unindented instead of matching the surrounding block. This is the
+    // same mechanism openBelow/openAbove already use for `o`/`O`.
+    const replacement = isLastLine ? '' : '\n';
     await editor.edit((eb) => eb.replace(new vscode.Range(beg, end), replacement));
-    const pos = new vscode.Position(startLine, indent.length);
+    const blankPos = new vscode.Position(startLine, 0);
+    editor.selection = new vscode.Selection(blankPos, blankPos);
+    await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
+    const indentedLine = editor.document.lineAt(startLine);
+    const pos = new vscode.Position(startLine, indentedLine.text.length);
     editor.selection = new vscode.Selection(pos, pos);
-    setMode(editor, Mode.Edit);
+    setMode(editor, Mode.Insert);
     return;
   }
 
@@ -246,7 +255,7 @@ export async function pasteBefore(): Promise<void> {
   }
 }
 
-// ── o / O — open a line below/above and enter EDIT ──────────────────────────
+// ── o / O — open a line below/above and enter INSERT ────────────────────────
 
 export async function openBelow(): Promise<void> {
   const editor = activeEditor();
@@ -257,7 +266,7 @@ export async function openBelow(): Promise<void> {
   const pos = new vscode.Position(line + 1, 0);
   editor.selection = new vscode.Selection(pos, pos);
   await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
-  setMode(editor, Mode.Edit);
+  setMode(editor, Mode.Insert);
 }
 
 export async function openAbove(): Promise<void> {
@@ -268,5 +277,5 @@ export async function openAbove(): Promise<void> {
   await editor.edit((eb) => eb.insert(start, '\n'));
   editor.selection = new vscode.Selection(start, start);
   await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
-  setMode(editor, Mode.Edit);
+  setMode(editor, Mode.Insert);
 }
