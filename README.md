@@ -67,15 +67,18 @@ architecture here already supports them once wired up.
 - **`d` / `c` / `y`** — open a pending operator (status bar shows e.g. `d…`),
   cancelled by Escape.
 - **`dd` / `cc` / `yy`** — N whole lines. Delete/yank remove them entirely;
-  `cc` instead empties down to ONE line and re-indents it via VS Code's own
-  language-aware indenter (the same mechanism `o`/`O` use below) before
-  dropping into INSERT — matching real vim's `cc` even on an already-blank
-  line inside an indented block, which a naive "copy the target line's own
-  whitespace" approach gets wrong (that line has none to copy). Verified pre-
-  reindent range math against an offset-based splice simulation (16/16 cases
-  across both milestones' fixes: first/middle/last line, multi-line counts,
-  the true-end-of-buffer edge case, single-line docs, and the blank-line-in-
-  a-block case specifically).
+  `cc` instead empties down to ONE line and drops into INSERT, keeping vim's
+  `autoindent` behavior: the new empty line preserves the changed line's own
+  indentation (`    foo` → an empty line still indented to column 4). The one
+  case that has no indent to preserve — an *already-blank* line inside an
+  indented block (VSCodeVim #1017) — falls back to VS Code's own language-
+  aware reindenter (the same mechanism `o`/`O` use) to compute the block's
+  indent. (Reindenting *unconditionally* was wrong: on a content line the
+  reindenter often recomputes to zero and eats the indent you had — so it's
+  scoped to only the blank-line case.) Verified the range math against an
+  offset-based splice simulation (both the indent-preserving and blank-line
+  paths, plus first/middle/last line, multi-line counts, the true-end-of-
+  buffer edge case, and single-line docs).
 - **`dw` / `cw` / `yw`** — word-target, via the raw cursor-move command run
   `count1 × count2` times (not composed from the plain-motion functions,
   which each consume their own count once and would double-count if reused
@@ -135,10 +138,11 @@ most-upvoted complaints, and they need to stay true as more gets built:
   extending `hjkl` into the tree/sidebar) is an **intentional non-goal**,
   not an oversight — that kind of overreach is exactly what causes those
   complaints.
-- **Native goal-column tracking for free.** `moveUp`/`moveDown` call VS
-  Code's own `cursorUp`/`cursorDown` directly rather than reimplementing
-  cursor movement, so "cursor loses its column moving through uneven lines"
-  isn't a bug class that can occur here.
+- **Native goal-column tracking for free.** Vertical motion goes through VS
+  Code's own cursor primitives (`moveUp`/`moveDown` issue a `cursorMove` with
+  `by: 'wrappedLine'`, identical to `cursorUp`/`cursorDown`) rather than
+  reimplementing cursor movement, so "cursor loses its column moving through
+  uneven lines" isn't a bug class that can occur here.
 - **Mode state never touches cursor position.** Switching tabs re-applies
   the target editor's remembered mode (context key, cursor style, status
   bar) but never moves the cursor — "cursor jumps to start of file after
@@ -146,6 +150,32 @@ most-upvoted complaints, and they need to stay true as more gets built:
 - **Ex-commands** (future milestone), when built, will delegate to VS Code's
   native find/replace-with-regex rather than a hand-rolled vim-regex
   translator — the same precedent as `/` → `actions.find` here already.
+
+### Performance on big codebases (explicit scaling invariants)
+
+"Vim gets slow / freezes on large files" is one of VSCodeVim's most-upvoted
+complaints. These are the properties that keep this engine flat regardless of
+file or project size — treated as invariants that every future feature must
+preserve:
+
+- **No per-keystroke document processing.** There is deliberately **no**
+  `onDidChangeTextDocument` handler — nothing re-parses or re-scans the buffer
+  on every edit. The only event subscribed is `onDidChangeActiveTextEditor`
+  (fires on *tab switch*, not on typing), and its handler is O(1): set a
+  context key, cursor style, and status-bar text. This is the single biggest
+  reason a 50k-line file feels the same as a 50-line one.
+- **Edits are one atomic operation regardless of count.** `1000dd` computes
+  the whole range first and issues exactly one `editor.edit()` — it does not
+  loop a per-line delete 1000 times.
+- **Large counts use a native count argument, not N dispatches.** Vertical
+  `j`/`k` pass `value: N` to a single `cursorMove`, so `500j` is one
+  round-trip. The generic repeat-loop (`state.ts`'s `repeatCommand`) is
+  reserved for motions whose counts are always tiny in practice (`3w`, `5l`);
+  a new motion that could plausibly take a large count must use the native
+  count path, not the loop.
+- **Future features must not regress this.** VISUAL mode and beyond must not
+  add a per-keystroke document scan or re-render on every selection change,
+  and must keep edits to a single `editor.edit()` per operation.
 
 ## ⚠️ Testing this requires VSCodeVim disabled
 

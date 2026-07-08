@@ -127,11 +127,16 @@ export function consumeCount(editor: vscode.TextEditor): number {
   return Math.max(1, n);
 }
 
-/** Run COMMAND N times in sequence — the uniform way every count-aware
- * motion repeats itself. A loop (not a native `value` arg) so it's
- * unconditionally correct regardless of whether a given command happens to
- * support a repeat argument; cursor motions are cheap, so looping even a
- * large N is imperceptible. */
+/** Run COMMAND N times in sequence — the fallback repeat path for commands
+ * that have NO native count argument (word motions `cursorWordStartRight`
+ * etc., `cursorLeft`/`cursorRight`). A loop keeps it unconditionally correct
+ * regardless of whether the command supports a repeat value.
+ *
+ * SCALING: this is O(N) sequential command dispatches, so it's reserved for
+ * motions whose counts are in practice tiny (`3w`, `5l`). Where a large
+ * count is realistic — vertical `j`/`k` (`500j`) — motions.ts uses VS Code's
+ * native `cursorMove` `value: N` instead, collapsing N dispatches into one.
+ * Don't route a plausibly-large-count motion through this loop. */
 export async function repeatCommand(
   command: string,
   times: number,

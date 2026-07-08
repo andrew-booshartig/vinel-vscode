@@ -21,10 +21,29 @@ async function move(editor: vscode.TextEditor, command: string): Promise<void> {
   await repeatCommand(command, n);
 }
 
+/**
+ * SCALING: vertical motion with a NATIVE count — one `cursorMove` carrying
+ * `value: N`, not N separate `cursorDown` dispatches. Vim counts are
+ * effectively unbounded (`500j`), and the repeat-loop is the one place this
+ * engine could add latency that grows with the count; collapsing it to a
+ * single native call keeps even a huge count to one round-trip. `j`/`k` are
+ * the common large-count motions, and `by: 'wrappedLine'` reproduces VS
+ * Code's own `cursorUp`/`cursorDown` exactly (goal column preserved), so
+ * this is a pure speedup with no behavior change.
+ *
+ * `h`/`l` (below) intentionally stay on the repeat-loop: horizontal counts
+ * are almost always tiny, and looping `cursorLeft`/`cursorRight` preserves
+ * their exact line-wrap semantics without having to re-derive them here.
+ */
+function moveVertical(editor: vscode.TextEditor, to: 'up' | 'down'): Thenable<unknown> {
+  const n = consumeCount(editor);
+  return vscode.commands.executeCommand('cursorMove', { to, by: 'wrappedLine', value: n });
+}
+
 export const moveLeft = () => activeEditor() && move(activeEditor()!, 'cursorLeft');
 export const moveRight = () => activeEditor() && move(activeEditor()!, 'cursorRight');
-export const moveUp = () => activeEditor() && move(activeEditor()!, 'cursorUp');
-export const moveDown = () => activeEditor() && move(activeEditor()!, 'cursorDown');
+export const moveUp = () => activeEditor() && moveVertical(activeEditor()!, 'up');
+export const moveDown = () => activeEditor() && moveVertical(activeEditor()!, 'down');
 
 export const wordForward = () => activeEditor() && move(activeEditor()!, 'cursorWordStartRight');
 export const wordBackward = () => activeEditor() && move(activeEditor()!, 'cursorWordStartLeft');

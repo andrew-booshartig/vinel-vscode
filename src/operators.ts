@@ -139,20 +139,34 @@ async function applyLinewise(editor: vscode.TextEditor, op: OperatorKind, n: num
   if (op === 'yank') return; // cursor stays put
 
   if (op === 'change') {
-    // Leave ONE truly empty line, then ask VS Code's own language-aware
-    // indenter to fill it in — not a naive copy of the target line's own
-    // literal whitespace, which is wrong exactly when it matters most: `cc`
-    // on an ALREADY-BLANK line (e.g. inside an indented block) has zero
-    // whitespace to copy, so the naive approach left the new line
-    // unindented instead of matching the surrounding block. This is the
-    // same mechanism openBelow/openAbove already use for `o`/`O`.
-    const replacement = isLastLine ? '' : '\n';
-    await editor.edit((eb) => eb.replace(new vscode.Range(beg, end), replacement));
-    const blankPos = new vscode.Position(startLine, 0);
-    editor.selection = new vscode.Selection(blankPos, blankPos);
-    await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
-    const indentedLine = editor.document.lineAt(startLine);
-    const pos = new vscode.Position(startLine, indentedLine.text.length);
+    // Match real vim's `cc` (autoindent): the new empty line KEEPS the
+    // changed line's own indentation. Copying that leading whitespace is
+    // exact and cheap for the common case — an indented CONTENT line like
+    // `    foo` becomes an empty line still indented to column 4. The one
+    // case copying can't handle is an ALREADY-BLANK line, which has no
+    // indent to copy (VSCodeVim #1017): only THERE do we fall back to VS
+    // Code's own language-aware reindenter to compute the block's indent
+    // (the same mechanism `o`/`O` use). Reindenting unconditionally was
+    // wrong — on a content line the reindenter often recomputes to zero and
+    // eats the indent the user actually had.
+    const firstLineText = doc.lineAt(startLine).text;
+    const lineIsBlank = firstLineText.trim().length === 0;
+
+    if (lineIsBlank) {
+      const replacement = isLastLine ? '' : '\n';
+      await editor.edit((eb) => eb.replace(new vscode.Range(beg, end), replacement));
+      const blankPos = new vscode.Position(startLine, 0);
+      editor.selection = new vscode.Selection(blankPos, blankPos);
+      await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
+    } else {
+      const indent = firstLineText.match(/^[ \t]*/)?.[0] ?? '';
+      const replacement = isLastLine ? indent : indent + '\n';
+      await editor.edit((eb) => eb.replace(new vscode.Range(beg, end), replacement));
+    }
+    // Land at the end of the (now whitespace-only) line — correct for both
+    // branches, since the line's entire content is its indentation.
+    const line = editor.document.lineAt(startLine);
+    const pos = new vscode.Position(startLine, line.text.length);
     editor.selection = new vscode.Selection(pos, pos);
     setMode(editor, Mode.Insert);
     return;
