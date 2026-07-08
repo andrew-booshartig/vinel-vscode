@@ -132,15 +132,38 @@ every real command binding — declared after — overrides it via VS Code's
 last-match-wins resolution. Net effect: only keys we've actually bound do
 anything in Normal/Visual; everything else is silent, exactly like vim. Insert
 mode is untouched (typing stays 100% native). Adding a real command later
-"wins" for free, so this needs no per-key maintenance. (`g` is deliberately
-*not* suppressed — it's the `gg` chord prefix; a lone-key binding would
-pre-empt the chord.)
+"wins" for free, so this needs no per-key maintenance. (Chord prefixes `g`,
+`z`, `>`, `<` are deliberately *not* suppressed — a lone-key binding would
+pre-empt their chords `gg`/`zz`/`>>`/`<<`.)
 
-**Not yet built** (future milestones): text objects (`ci"`, `da(`, `vi(`),
-blockwise visual (`Ctrl-V`), marks/named registers, ex-commands, macros, and
-the broader fill-out of Normal-mode vim commands (`a`/`A`/`f`/`t`/`r`/`s`/`n`/
-`%`/`*` …) — each now safe to add incrementally, inert until bound rather than
-typing.
+**The modal engine — daily-driver Normal-mode coverage.** The everyday commands
+that make Normal mode feel complete, all count-aware and (where they're
+motions) Visual-aware:
+
+- **Insert-entry:** `a` append, `A` append-at-EOL, `I` insert-at-first-nonblank,
+  `s` substitute char, `S` substitute line (= `cc`), `X` delete-before.
+- **Find-char:** `f` / `F` / `t` / `T` + `;` / `,` repeat, and `r` replace —
+  built on a small "await one keystroke" layer (a `betterVim.awaitingChar`
+  context key + a `provideChar` binding for every printable key, declared
+  **last** so it wins only while waiting). They double as operator targets:
+  `dt,`, `df)`, `cf"` all work (`f`/`F` include the target char, `t`/`T` stop
+  short) — same declarative, no-`type`-hijack approach as suppression.
+- **Motions:** `W` / `B` / `E` (WORD, whitespace-delimited), `%` (matching
+  bracket — native `jumpToBracket` / `selectToBracket`), `-` / `+` / `_` / `g_`
+  (first/last-non-blank line motions), `H` / `M` / `L` (viewport top/mid/bottom
+  via `visibleRanges`).
+- **Search & scroll:** `n` / `N` (repeat native Find), `*` / `#` (word under
+  cursor, via `nextSelectionMatchFindAction`), `Ctrl-D` / `Ctrl-U` (half page),
+  `Ctrl-F` / `Ctrl-B` (page), `zz` / `zt` / `zb` (scroll current line to
+  center/top/bottom via `revealLine`).
+- **Line ops in Normal:** `J` join, `~` toggle-case, `>>` / `<<` indent/outdent.
+
+**Not yet built** (future milestones): text objects (`ciw`, `ci"`, `da(`,
+`vi(`), dot-repeat `.`, macros (likely delegate to the `kb-macro` extension),
+marks (`m`/`` ` ``/`'`), named registers (`"a`), ex-commands (`:`, `:%s/` →
+native find/replace), blockwise visual (`Ctrl-V`), replace mode `R`, and
+`>{motion}` as a full indent operator. Each is safe to add incrementally —
+inert until bound, never typing.
 
 ## Why this should avoid VSCodeVim's worst problems
 

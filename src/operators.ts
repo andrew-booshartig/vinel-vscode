@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Mode, consumeCount, getMode, isVisual, setMode, setPendingOperatorLabel } from './state';
+import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingOperatorLabel } from './state';
 import { setRegister, getRegister } from './registers';
 
 /**
@@ -441,4 +441,254 @@ async function visualPasteOver(editor: vscode.TextEditor): Promise<void> {
   }
 
   setMode(editor, Mode.Normal);
+}
+
+// ── s / S / X — substitute char / line, delete-before ───────────────────────
+
+/** `s` — delete `count` chars under the cursor and enter INSERT (= `cl`). */
+export async function substituteChar(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  const pos = editor.selection.active;
+  const line = editor.document.lineAt(pos.line);
+  const end = Math.min(pos.character + n, line.text.length);
+  if (end > pos.character) {
+    const range = new vscode.Range(pos, new vscode.Position(pos.line, end));
+    setRegister(editor.document.getText(range), false);
+    await editor.edit((eb) => eb.delete(range));
+  }
+  setMode(editor, Mode.Insert);
+}
+
+/** `S` — substitute whole line, identical to `cc`. */
+export async function substituteLine(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  await applyLinewise(editor, 'change', n);
+}
+
+/** `X` — delete `count` chars BEFORE the cursor (mirror of `x`). */
+export async function deleteCharBefore(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  const pos = editor.selection.active;
+  const begCol = Math.max(0, pos.character - n);
+  if (begCol >= pos.character) return;
+  const range = new vscode.Range(new vscode.Position(pos.line, begCol), pos);
+  setRegister(editor.document.getText(range), false);
+  await editor.edit((eb) => eb.delete(range));
+}
+
+// ── J / ~ / >> / << — Normal-mode line operations ───────────────────────────
+
+/** `J` — join `count` lines (native join; `count` lines means `count-1` joins,
+ * with a bare `J` = current + next). */
+export async function normalJoin(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const joins = Math.max(1, consumeCount(editor) - 1);
+  for (let i = 0; i < joins; i++) {
+    await vscode.commands.executeCommand('editor.action.joinLines');
+  }
+}
+
+/** `~` — toggle the case of `count` chars under the cursor and advance. */
+export async function normalToggleCase(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  const pos = editor.selection.active;
+  const line = editor.document.lineAt(pos.line);
+  const end = Math.min(pos.character + n, line.text.length);
+  if (end <= pos.character) return;
+  const range = new vscode.Range(pos, new vscode.Position(pos.line, end));
+  const toggled = Array.from(editor.document.getText(range))
+    .map((ch) => (ch === ch.toLowerCase() ? ch.toUpperCase() : ch.toLowerCase()))
+    .join('');
+  await editor.edit((eb) => eb.replace(range, toggled));
+  const landing = new vscode.Position(pos.line, end);
+  editor.selection = new vscode.Selection(landing, landing);
+}
+
+async function indentOutdent(editor: vscode.TextEditor, command: string): Promise<void> {
+  const n = consumeCount(editor);
+  const startLine = editor.selection.active.line;
+  const endLine = Math.min(startLine + n - 1, editor.document.lineCount - 1);
+  editor.selection = new vscode.Selection(
+    new vscode.Position(startLine, 0),
+    new vscode.Position(endLine, 0),
+  );
+  await vscode.commands.executeCommand(command);
+  // Land on the first non-blank of the first line, like vim.
+  const text = editor.document.lineAt(startLine).text;
+  const col = Math.max(0, text.search(/\S/));
+  const pos = new vscode.Position(startLine, col);
+  editor.selection = new vscode.Selection(pos, pos);
+}
+
+/** `>>` — indent `count` lines. */
+export const indentLines = () => {
+  const editor = activeEditor();
+  return editor ? indentOutdent(editor, 'editor.action.indentLines') : undefined;
+};
+/** `<<` — outdent `count` lines. */
+export const outdentLines = () => {
+  const editor = activeEditor();
+  return editor ? indentOutdent(editor, 'editor.action.outdentLines') : undefined;
+};
+
+// ── f / F / t / T / r / ; / , — find-char + replace ─────────────────────────
+// The "await one keystroke" layer: f/F/t/T/r set a pending action and turn on
+// the `betterVim.awaitingChar` context key; the next printable key fires
+// `provideChar` with its character (declarative, no `type` hijack — see the
+// provideChar bindings in package.json). Find motions double as operator
+// targets (`dt,`, `df)`, `cf"`) by capturing any pending d/c/y.
+
+type FindKind = 'f' | 'F' | 't' | 'T';
+const FLIP: Record<FindKind, FindKind> = { f: 'F', F: 'f', t: 'T', T: 't' };
+
+let pendingChar: { kind: FindKind | 'r'; operator: OperatorKind | null; count: number } | null = null;
+let lastFind: { kind: FindKind; char: string } | null = null;
+
+function setAwaiting(on: boolean): void {
+  vscode.commands.executeCommand('setContext', 'betterVim.awaitingChar', on);
+}
+
+/** Clear a half-typed f/F/t/T/r (Escape). */
+export function cancelPendingChar(): void {
+  pendingChar = null;
+  setAwaiting(false);
+}
+
+/** `f`/`F`/`t`/`T` — begin a find; the next key supplies the target char.
+ * Captures a pending operator so `dt,` / `cf)` work. */
+export function findChar(kind: FindKind) {
+  return () => {
+    const editor = activeEditor();
+    if (!editor) return;
+    const operator = pendingOperator;
+    const opCount = operatorCount;
+    if (operator) cancelPendingOperator();
+    // count1 × count2 when an operator is pending, else just the motion count.
+    const count = operator ? opCount * consumeCount(editor) : consumeCount(editor);
+    pendingChar = { kind, operator, count };
+    setAwaiting(true);
+  };
+}
+
+/** `r` — replace the next `count` chars with the key supplied next. */
+export function replaceChar(): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  pendingChar = { kind: 'r', operator: null, count: consumeCount(editor) };
+  setAwaiting(true);
+}
+
+/** Column of the `count`-th occurrence of CHAR relative to the cursor, or
+ * null if not found on this line. Forward (f/t) searches after the cursor;
+ * backward (F/T) searches before it. */
+function findCharColumn(text: string, startCol: number, kind: FindKind, char: string, count: number): number | null {
+  const forward = kind === 'f' || kind === 't';
+  let i = startCol;
+  let remaining = count;
+  while (remaining > 0) {
+    i = forward ? text.indexOf(char, i + 1) : text.lastIndexOf(char, i - 1);
+    if (i === -1) return null;
+    remaining--;
+  }
+  return i;
+}
+
+/** Run a resolved find (from provideChar or from `;`/`,`): move / extend /
+ * apply-operator over the current line. */
+async function doFind(
+  editor: vscode.TextEditor,
+  kind: FindKind,
+  char: string,
+  count: number,
+  operator: OperatorKind | null,
+): Promise<void> {
+  const line = editor.selection.active.line;
+  const text = editor.document.lineAt(line).text;
+  const startCol = editor.selection.active.character;
+  const foundCol = findCharColumn(text, startCol, kind, char, count);
+  if (foundCol === null) return; // not found → no-op, like vim
+  lastFind = { kind, char };
+
+  const forward = kind === 'f' || kind === 't';
+  // Cursor landing: f/F land ON the char, t stops one before, T one after.
+  const landCol = kind === 'f' ? foundCol
+    : kind === 't' ? foundCol - 1
+    : kind === 'F' ? foundCol
+    : foundCol + 1;
+
+  if (operator) {
+    // f/F are inclusive of the found char; t/T stop short of it.
+    let a: vscode.Position, b: vscode.Position;
+    if (forward) {
+      const endCol = kind === 'f' ? foundCol + 1 : foundCol;
+      a = new vscode.Position(line, startCol);
+      b = new vscode.Position(line, endCol);
+    } else {
+      const begCol = kind === 'F' ? foundCol : foundCol + 1;
+      a = new vscode.Position(line, begCol);
+      b = new vscode.Position(line, startCol);
+    }
+    await applyCharwiseRange(editor, operator, a, b);
+    return;
+  }
+
+  const target = new vscode.Position(line, landCol);
+  setActive(editor, target);
+  afterMotion(editor);
+  editor.revealRange(new vscode.Range(target, target));
+}
+
+/** Replace `count` chars under the cursor with CHAR (all on the current line).
+ * Cursor lands on the last replaced char, like vim. */
+async function replaceChars(editor: vscode.TextEditor, char: string, count: number): Promise<void> {
+  const pos = editor.selection.active;
+  const line = editor.document.lineAt(pos.line);
+  const end = Math.min(pos.character + count, line.text.length);
+  if (end <= pos.character) return;
+  const range = new vscode.Range(pos, new vscode.Position(pos.line, end));
+  await editor.edit((eb) => eb.replace(range, char.repeat(end - pos.character)));
+  const landing = new vscode.Position(pos.line, end - 1);
+  editor.selection = new vscode.Selection(landing, landing);
+}
+
+/** The key pressed after f/F/t/T/r, delivered as a command argument (the
+ * keybinding passes the character string). */
+export async function provideChar(char?: unknown): Promise<void> {
+  const editor = activeEditor();
+  const pc = pendingChar;
+  pendingChar = null;
+  setAwaiting(false);
+  if (!editor || !pc || typeof char !== 'string' || char.length === 0) return;
+
+  if (pc.kind === 'r') {
+    await replaceChars(editor, char, pc.count);
+    return;
+  }
+  await doFind(editor, pc.kind, char, pc.count, pc.operator);
+}
+
+/** `;` (repeat last find) / `,` (repeat reversed). Neither changes the
+ * canonical find — a later `;` still repeats the original `f`/`t`/… . */
+export function repeatFind(reverse: boolean) {
+  return async () => {
+    const editor = activeEditor();
+    if (!editor || !lastFind) return;
+    const original = lastFind;
+    const operator = pendingOperator;
+    const opCount = operatorCount;
+    if (operator) cancelPendingOperator();
+    const count = operator ? opCount * consumeCount(editor) : consumeCount(editor);
+    const kind = reverse ? FLIP[original.kind] : original.kind;
+    await doFind(editor, kind, original.char, count, operator);
+    lastFind = original; // doFind overwrote it; keep the canonical find
+  };
 }

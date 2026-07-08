@@ -159,3 +159,180 @@ export const paragraphForward = () => paragraphMove(1);
  * has an excellent, idiomatic search experience, use it rather than
  * reimplementing vim's search-and-jump as a leaky abstraction on top. */
 export const search = () => vscode.commands.executeCommand('actions.find');
+
+// ── W / B / E — WORD motions (whitespace-delimited) ─────────────────────────
+// Unlike w/b/e (which stop at punctuation), a WORD is a run of non-whitespace.
+// VSCode has no native WORD command, so this is a document-offset scan.
+// (Movement only this pass; dW/cW/yW as operator targets are a follow-up.)
+
+function isWs(ch: string | undefined): boolean {
+  return ch === undefined || /\s/.test(ch);
+}
+
+function wordwiseTarget(text: string, from: number, kind: 'W' | 'B' | 'E'): number {
+  const n = text.length;
+  let i = from;
+  if (kind === 'W') {
+    while (i < n && !isWs(text[i])) i++; // off current WORD
+    while (i < n && isWs(text[i])) i++;  // over whitespace
+    return Math.min(i, Math.max(n - 1, 0));
+  }
+  if (kind === 'B') {
+    i--;
+    while (i >= 0 && isWs(text[i])) i--;      // over whitespace
+    while (i > 0 && !isWs(text[i - 1])) i--;  // to start of WORD
+    return Math.max(i, 0);
+  }
+  // E — end of next WORD
+  i++;
+  while (i < n && isWs(text[i])) i++;
+  while (i < n - 1 && !isWs(text[i + 1])) i++;
+  return Math.min(i, Math.max(n - 1, 0));
+}
+
+function wordMotionBig(kind: 'W' | 'B' | 'E'): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  const doc = editor.document;
+  const text = doc.getText();
+  let offset = doc.offsetAt(editor.selection.active);
+  for (let k = 0; k < n; k++) offset = wordwiseTarget(text, offset, kind);
+  const pos = doc.positionAt(offset);
+  setActive(editor, pos);
+  afterMotion(editor);
+  editor.revealRange(new vscode.Range(pos, pos));
+}
+
+export const wordForwardBig = () => wordMotionBig('W');
+export const wordBackwardBig = () => wordMotionBig('B');
+export const wordEndBig = () => wordMotionBig('E');
+
+// ── % — matching bracket ────────────────────────────────────────────────────
+
+/** `%` — jump to the matching bracket (Visual extends the selection to it).
+ * `{count}%` (go to N% of file) is uncommon and not implemented. */
+export function matchBracket(): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  consumeCount(editor);
+  vscode.commands.executeCommand(
+    isVisual(editor) ? 'editor.action.selectToBracket' : 'editor.action.jumpToBracket',
+  );
+}
+
+// ── - / + / _ / g_ — first/last-non-blank line motions ──────────────────────
+
+function firstNonBlankCol(doc: vscode.TextDocument, line: number): number {
+  const i = doc.lineAt(line).text.search(/\S/);
+  return i === -1 ? 0 : i;
+}
+function lastNonBlankCol(doc: vscode.TextDocument, line: number): number {
+  const trimmed = doc.lineAt(line).text.replace(/\s+$/, '');
+  return trimmed.length > 0 ? trimmed.length - 1 : 0;
+}
+
+function lineMotion(kind: 'prev' | 'next' | 'downFirstNB' | 'downLastNB'): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  const doc = editor.document;
+  const last = doc.lineCount - 1;
+  const cur = editor.selection.active.line;
+  let line: number;
+  if (kind === 'prev') line = Math.max(0, cur - n);
+  else if (kind === 'next') line = Math.min(last, cur + n);
+  else line = Math.min(last, cur + (n - 1)); // _ and g_ : count-1 lines DOWN
+  const col = kind === 'downLastNB' ? lastNonBlankCol(doc, line) : firstNonBlankCol(doc, line);
+  const pos = new vscode.Position(line, col);
+  setActive(editor, pos);
+  afterMotion(editor);
+  editor.revealRange(new vscode.Range(pos, pos));
+}
+
+export const lineUp = () => lineMotion('prev');            // -
+export const lineDown = () => lineMotion('next');          // + / Enter
+export const lineFirstNonBlank = () => lineMotion('downFirstNB'); // _
+export const lineLastNonBlank = () => lineMotion('downLastNB');   // g_
+
+// ── H / M / L — cursor to top / middle / bottom of the VISIBLE viewport ─────
+// (Simplified: H/L ignore vim's count-from-edge argument.)
+
+function screenMotion(where: 'H' | 'M' | 'L'): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  consumeCount(editor);
+  const visible = editor.visibleRanges;
+  if (!visible.length) return;
+  const top = visible[0].start.line;
+  const bottom = visible[visible.length - 1].end.line;
+  const line = where === 'H' ? top : where === 'L' ? bottom : Math.floor((top + bottom) / 2);
+  const pos = new vscode.Position(line, firstNonBlankCol(editor.document, line));
+  setActive(editor, pos);
+  afterMotion(editor);
+  editor.revealRange(new vscode.Range(pos, pos));
+}
+
+export const screenTop = () => screenMotion('H');
+export const screenMiddle = () => screenMotion('M');
+export const screenBottom = () => screenMotion('L');
+
+// ── n / N / * / # — search repeat + word-under-cursor ───────────────────────
+
+export const searchNext = () => vscode.commands.executeCommand('editor.action.nextMatchFindAction');
+export const searchPrev = () => vscode.commands.executeCommand('editor.action.previousMatchFindAction');
+
+async function searchWord(forward: boolean): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const range = editor.document.getWordRangeAtPosition(editor.selection.active);
+  if (!range) return;
+  editor.selection = new vscode.Selection(range.start, range.end);
+  await vscode.commands.executeCommand(
+    forward ? 'editor.action.nextSelectionMatchFindAction' : 'editor.action.previousSelectionMatchFindAction',
+  );
+  const sel = editor.selection; // collapse onto the match VSCode jumped to
+  editor.selection = new vscode.Selection(sel.start, sel.start);
+}
+export const starSearch = () => searchWord(true);   // *
+export const hashSearch = () => searchWord(false);  // #
+
+// ── Ctrl-D/U (half page) · Ctrl-F/B (page) · zz/zt/zb (scroll line) ──────────
+
+async function halfPage(direction: 'up' | 'down'): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  consumeCount(editor);
+  const v = editor.visibleRanges;
+  const value = v.length ? Math.max(1, Math.floor((v[0].end.line - v[0].start.line) / 2)) : 10;
+  await vscode.commands.executeCommand('cursorMove', {
+    to: direction, by: 'wrappedLine', value, select: isVisual(editor),
+  });
+  afterMotion(editor);
+}
+export const halfPageDown = () => halfPage('down'); // Ctrl-D
+export const halfPageUp = () => halfPage('up');     // Ctrl-U
+
+function page(direction: 'down' | 'up'): Thenable<unknown> | void {
+  const editor = activeEditor();
+  if (!editor) return;
+  consumeCount(editor);
+  const select = isVisual(editor);
+  const cmd = direction === 'down'
+    ? (select ? 'cursorPageDownSelect' : 'cursorPageDown')
+    : (select ? 'cursorPageUpSelect' : 'cursorPageUp');
+  return vscode.commands.executeCommand(cmd);
+}
+export const pageDown = () => page('down'); // Ctrl-F
+export const pageUp = () => page('up');     // Ctrl-B
+
+function revealAt(at: 'center' | 'top' | 'bottom'): Thenable<unknown> | void {
+  const editor = activeEditor();
+  if (!editor) return;
+  return vscode.commands.executeCommand('revealLine', {
+    lineNumber: editor.selection.active.line, at,
+  });
+}
+export const scrollCenter = () => revealAt('center'); // zz
+export const scrollTop = () => revealAt('top');       // zt
+export const scrollBottom = () => revealAt('bottom'); // zb

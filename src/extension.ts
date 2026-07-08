@@ -36,6 +36,7 @@ function enterNormal(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
   operators.cancelPendingOperator(); // Escape cancels a half-typed d/c/y, like vim
+  operators.cancelPendingChar();     // …and a half-typed f/t/r
   // Leaving visual: collapse the selection back to a caret (vim's Escape).
   if (isVisual(editor)) {
     const pos = editor.selection.active;
@@ -47,6 +48,37 @@ function enterNormal(): void {
 function enterInsert(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
+  setMode(editor, Mode.Insert);
+}
+
+/** `a` — append: one char right (clamped to line end), then INSERT. */
+function append(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const pos = editor.selection.active;
+  const line = editor.document.lineAt(pos.line);
+  const p = new vscode.Position(pos.line, Math.min(pos.character + 1, line.text.length));
+  editor.selection = new vscode.Selection(p, p);
+  setMode(editor, Mode.Insert);
+}
+
+/** `A` — append at end of line, then INSERT. */
+function appendEol(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const end = editor.document.lineAt(editor.selection.active.line).range.end;
+  editor.selection = new vscode.Selection(end, end);
+  setMode(editor, Mode.Insert);
+}
+
+/** `I` — insert at first non-blank of the line, then INSERT. */
+function insertFirstNonBlank(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const line = editor.document.lineAt(editor.selection.active.line);
+  const i = line.text.search(/\S/);
+  const p = new vscode.Position(line.lineNumber, i === -1 ? 0 : i);
+  editor.selection = new vscode.Selection(p, p);
   setMode(editor, Mode.Insert);
 }
 
@@ -220,6 +252,56 @@ export function activate(context: vscode.ExtensionContext): void {
     ['betterVim.visualLower', operators.visualLower],
     ['betterVim.visualUpper', operators.visualUpper],
     ['betterVim.visualToggleCase', operators.visualToggleCase],
+
+    // Insert-entry variants
+    ['betterVim.append', append],
+    ['betterVim.appendEol', appendEol],
+    ['betterVim.insertFirstNonBlank', insertFirstNonBlank],
+    ['betterVim.substituteChar', operators.substituteChar],
+    ['betterVim.substituteLine', operators.substituteLine],
+    ['betterVim.deleteCharBefore', operators.deleteCharBefore],
+
+    // Normal-mode line operations
+    ['betterVim.join', operators.normalJoin],
+    ['betterVim.toggleCase', operators.normalToggleCase],
+    ['betterVim.indentLines', operators.indentLines],
+    ['betterVim.outdentLines', operators.outdentLines],
+
+    // Additional motions
+    ['betterVim.wordForwardBig', motions.wordForwardBig],
+    ['betterVim.wordBackwardBig', motions.wordBackwardBig],
+    ['betterVim.wordEndBig', motions.wordEndBig],
+    ['betterVim.matchBracket', motions.matchBracket],
+    ['betterVim.lineUp', motions.lineUp],
+    ['betterVim.lineDown', motions.lineDown],
+    ['betterVim.lineFirstNonBlank', motions.lineFirstNonBlank],
+    ['betterVim.lineLastNonBlank', motions.lineLastNonBlank],
+    ['betterVim.screenTop', motions.screenTop],
+    ['betterVim.screenMiddle', motions.screenMiddle],
+    ['betterVim.screenBottom', motions.screenBottom],
+
+    // Search & scroll
+    ['betterVim.searchNext', motions.searchNext],
+    ['betterVim.searchPrev', motions.searchPrev],
+    ['betterVim.starSearch', motions.starSearch],
+    ['betterVim.hashSearch', motions.hashSearch],
+    ['betterVim.halfPageDown', motions.halfPageDown],
+    ['betterVim.halfPageUp', motions.halfPageUp],
+    ['betterVim.pageDown', motions.pageDown],
+    ['betterVim.pageUp', motions.pageUp],
+    ['betterVim.scrollCenter', motions.scrollCenter],
+    ['betterVim.scrollTop', motions.scrollTop],
+    ['betterVim.scrollBottom', motions.scrollBottom],
+
+    // Find-char + replace (f/F/t/T/r/;/, + the provideChar keystroke layer)
+    ['betterVim.findForward', operators.findChar('f')],
+    ['betterVim.findBackward', operators.findChar('F')],
+    ['betterVim.tillForward', operators.findChar('t')],
+    ['betterVim.tillBackward', operators.findChar('T')],
+    ['betterVim.replaceChar', operators.replaceChar],
+    ['betterVim.repeatFind', operators.repeatFind(false)],
+    ['betterVim.repeatFindReverse', operators.repeatFind(true)],
+    ['betterVim.provideChar', operators.provideChar],
   ];
 
   for (const [id, handler] of commands) {
