@@ -134,7 +134,7 @@ const STATUS_LABEL: Record<Mode, string> = {
 function applyToEditor(editor: vscode.TextEditor): void {
   const mode = getMode(editor);
 
-  vscode.commands.executeCommand('setContext', 'betterVim.mode', CONTEXT_VALUE[mode]);
+  vscode.commands.executeCommand('setContext', 'vinel.mode', CONTEXT_VALUE[mode]);
 
   // Line cursor only while typing (Insert); block everywhere else, including
   // both visual sub-modes — matching vim, which keeps the block cursor in

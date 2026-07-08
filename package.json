@@ -1,360 +1,383 @@
 {
-  "name": "bettervim",
-  "displayName": "BetterVim",
-  "description": "A native modal-editing state machine for VSCode — not an emulation, not a Neovim bridge. NORMAL-mode keys are discrete keybindings routed to VS Code's own native commands; INSERT mode never touches typing. No shadow undo tree, no `type`-command hijacking — the two root causes behind most VSCodeVim complaints.",
+  "name": "vinel",
+  "displayName": "ViNEL — Vim & Neovim modal editing",
+  "description": "Vim / Neovim modal editing for VS Code — ViNEL Is Not an Emulation Layer. A native modal state machine (normal/visual/insert modes, operators, text objects, dot-repeat, find-char) routed straight to VS Code's own commands. Not a Vim emulation and not a Neovim bridge: no type-hijack, no shadow undo — fast on big files.",
   "version": "0.0.1",
   "publisher": "andrew-booshartig",
   "license": "MIT",
+  "keywords": [
+    "vim",
+    "vi",
+    "neovim",
+    "nvim",
+    "vim mode",
+    "vim emulation",
+    "vim keybindings",
+    "vim motions",
+    "modal editing",
+    "modal",
+    "normal mode",
+    "vimrc",
+    "keymap",
+    "keybindings",
+    "evil",
+    "vintage",
+    "vscodevim"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/andrew-booshartig/bettervim-vscode"
+    "url": "https://github.com/andrew-booshartig/vinel-vscode"
   },
   "engines": {
     "vscode": "^1.90.0"
   },
+  "galleryBanner": {
+    "color": "#1a1b26",
+    "theme": "dark"
+  },
   "categories": [
-    "Other",
-    "Keymaps"
+    "Keymaps",
+    "Other"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "betterVim.enterNormal",
-        "title": "BetterVim: Enter NORMAL mode"
+        "command": "vinel.enterNormal",
+        "title": "ViNEL: Enter NORMAL mode"
       },
       {
-        "command": "betterVim.enterInsert",
-        "title": "BetterVim: Enter INSERT mode"
+        "command": "vinel.enterInsert",
+        "title": "ViNEL: Enter INSERT mode"
       },
       {
-        "command": "betterVim.moveLeft",
-        "title": "BetterVim: Move left (h)"
+        "command": "vinel.moveLeft",
+        "title": "ViNEL: Move left (h)"
       },
       {
-        "command": "betterVim.moveRight",
-        "title": "BetterVim: Move right (l)"
+        "command": "vinel.moveRight",
+        "title": "ViNEL: Move right (l)"
       },
       {
-        "command": "betterVim.moveUp",
-        "title": "BetterVim: Move up (k)"
+        "command": "vinel.moveUp",
+        "title": "ViNEL: Move up (k)"
       },
       {
-        "command": "betterVim.moveDown",
-        "title": "BetterVim: Move down (j)"
+        "command": "vinel.moveDown",
+        "title": "ViNEL: Move down (j)"
       },
       {
-        "command": "betterVim.wordForward",
-        "title": "BetterVim: Word forward (w)"
+        "command": "vinel.wordForward",
+        "title": "ViNEL: Word forward (w)"
       },
       {
-        "command": "betterVim.wordBackward",
-        "title": "BetterVim: Word backward (b)"
+        "command": "vinel.wordBackward",
+        "title": "ViNEL: Word backward (b)"
       },
       {
-        "command": "betterVim.wordEnd",
-        "title": "BetterVim: Word end (e)"
+        "command": "vinel.wordEnd",
+        "title": "ViNEL: Word end (e)"
       },
       {
-        "command": "betterVim.firstNonBlank",
-        "title": "BetterVim: First non-blank (^)"
+        "command": "vinel.firstNonBlank",
+        "title": "ViNEL: First non-blank (^)"
       },
       {
-        "command": "betterVim.lineEnd",
-        "title": "BetterVim: Line end ($)"
+        "command": "vinel.lineEnd",
+        "title": "ViNEL: Line end ($)"
       },
       {
-        "command": "betterVim.bufferTop",
-        "title": "BetterVim: Buffer top (gg)"
+        "command": "vinel.bufferTop",
+        "title": "ViNEL: Buffer top (gg)"
       },
       {
-        "command": "betterVim.bufferBottom",
-        "title": "BetterVim: Buffer bottom (G)"
+        "command": "vinel.bufferBottom",
+        "title": "ViNEL: Buffer bottom (G)"
       },
       {
-        "command": "betterVim.paragraphBackward",
-        "title": "BetterVim: Paragraph backward ({)"
+        "command": "vinel.paragraphBackward",
+        "title": "ViNEL: Paragraph backward ({)"
       },
       {
-        "command": "betterVim.paragraphForward",
-        "title": "BetterVim: Paragraph forward (})"
+        "command": "vinel.paragraphForward",
+        "title": "ViNEL: Paragraph forward (})"
       },
       {
-        "command": "betterVim.search",
-        "title": "BetterVim: Search (/)"
+        "command": "vinel.search",
+        "title": "ViNEL: Search (/)"
       },
       {
-        "command": "betterVim.opDelete",
-        "title": "BetterVim: Delete operator (d)"
+        "command": "vinel.opDelete",
+        "title": "ViNEL: Delete operator (d)"
       },
       {
-        "command": "betterVim.opChange",
-        "title": "BetterVim: Change operator (c)"
+        "command": "vinel.opChange",
+        "title": "ViNEL: Change operator (c)"
       },
       {
-        "command": "betterVim.opYank",
-        "title": "BetterVim: Yank operator (y)"
+        "command": "vinel.opYank",
+        "title": "ViNEL: Yank operator (y)"
       },
       {
-        "command": "betterVim.deleteToEol",
-        "title": "BetterVim: Delete to end of line (D)"
+        "command": "vinel.deleteToEol",
+        "title": "ViNEL: Delete to end of line (D)"
       },
       {
-        "command": "betterVim.changeToEol",
-        "title": "BetterVim: Change to end of line (C)"
+        "command": "vinel.changeToEol",
+        "title": "ViNEL: Change to end of line (C)"
       },
       {
-        "command": "betterVim.yankLine",
-        "title": "BetterVim: Yank line (Y)"
+        "command": "vinel.yankLine",
+        "title": "ViNEL: Yank line (Y)"
       },
       {
-        "command": "betterVim.cutChar",
-        "title": "BetterVim: Cut character (x)"
+        "command": "vinel.cutChar",
+        "title": "ViNEL: Cut character (x)"
       },
       {
-        "command": "betterVim.pasteAfter",
-        "title": "BetterVim: Paste after (p)"
+        "command": "vinel.pasteAfter",
+        "title": "ViNEL: Paste after (p)"
       },
       {
-        "command": "betterVim.pasteBefore",
-        "title": "BetterVim: Paste before (P)"
+        "command": "vinel.pasteBefore",
+        "title": "ViNEL: Paste before (P)"
       },
       {
-        "command": "betterVim.openBelow",
-        "title": "BetterVim: Open line below (o)"
+        "command": "vinel.openBelow",
+        "title": "ViNEL: Open line below (o)"
       },
       {
-        "command": "betterVim.openAbove",
-        "title": "BetterVim: Open line above (O)"
+        "command": "vinel.openAbove",
+        "title": "ViNEL: Open line above (O)"
       },
       {
-        "command": "betterVim.undo",
-        "title": "BetterVim: Undo (u)"
+        "command": "vinel.undo",
+        "title": "ViNEL: Undo (u)"
       },
       {
-        "command": "betterVim.redo",
-        "title": "BetterVim: Redo (Ctrl+R)"
+        "command": "vinel.redo",
+        "title": "ViNEL: Redo (Ctrl+R)"
       },
       {
-        "command": "betterVim.enterVisual",
-        "title": "BetterVim: Enter VISUAL mode (v)"
+        "command": "vinel.enterVisual",
+        "title": "ViNEL: Enter VISUAL mode (v)"
       },
       {
-        "command": "betterVim.enterVisualLine",
-        "title": "BetterVim: Enter VISUAL-LINE mode (V)"
+        "command": "vinel.enterVisualLine",
+        "title": "ViNEL: Enter VISUAL-LINE mode (V)"
       },
       {
-        "command": "betterVim.suppressKey",
-        "title": "BetterVim: (internal) suppress unbound key"
+        "command": "vinel.suppressKey",
+        "title": "ViNEL: (internal) suppress unbound key"
       },
       {
-        "command": "betterVim.oKey",
-        "title": "BetterVim: Open line below / swap selection ends (o)"
+        "command": "vinel.oKey",
+        "title": "ViNEL: Open line below / swap selection ends (o)"
       },
       {
-        "command": "betterVim.visualDelete",
-        "title": "BetterVim: Delete selection (visual)"
+        "command": "vinel.visualDelete",
+        "title": "ViNEL: Delete selection (visual)"
       },
       {
-        "command": "betterVim.visualIndent",
-        "title": "BetterVim: Indent selection (visual >)"
+        "command": "vinel.visualIndent",
+        "title": "ViNEL: Indent selection (visual >)"
       },
       {
-        "command": "betterVim.visualOutdent",
-        "title": "BetterVim: Outdent selection (visual <)"
+        "command": "vinel.visualOutdent",
+        "title": "ViNEL: Outdent selection (visual <)"
       },
       {
-        "command": "betterVim.visualJoin",
-        "title": "BetterVim: Join selected lines (visual J)"
+        "command": "vinel.visualJoin",
+        "title": "ViNEL: Join selected lines (visual J)"
       },
       {
-        "command": "betterVim.visualLower",
-        "title": "BetterVim: Lowercase selection (visual u)"
+        "command": "vinel.visualLower",
+        "title": "ViNEL: Lowercase selection (visual u)"
       },
       {
-        "command": "betterVim.visualUpper",
-        "title": "BetterVim: Uppercase selection (visual U)"
+        "command": "vinel.visualUpper",
+        "title": "ViNEL: Uppercase selection (visual U)"
       },
       {
-        "command": "betterVim.visualToggleCase",
-        "title": "BetterVim: Toggle case of selection (visual ~)"
+        "command": "vinel.visualToggleCase",
+        "title": "ViNEL: Toggle case of selection (visual ~)"
       },
       {
-        "command": "betterVim.append",
-        "title": "BetterVim: Append (a)"
+        "command": "vinel.append",
+        "title": "ViNEL: Append (a)"
       },
       {
-        "command": "betterVim.appendEol",
-        "title": "BetterVim: Append at end of line (A)"
+        "command": "vinel.appendEol",
+        "title": "ViNEL: Append at end of line (A)"
       },
       {
-        "command": "betterVim.insertFirstNonBlank",
-        "title": "BetterVim: Insert at first non-blank (I)"
+        "command": "vinel.insertFirstNonBlank",
+        "title": "ViNEL: Insert at first non-blank (I)"
       },
       {
-        "command": "betterVim.substituteChar",
-        "title": "BetterVim: Substitute char (s)"
+        "command": "vinel.substituteChar",
+        "title": "ViNEL: Substitute char (s)"
       },
       {
-        "command": "betterVim.substituteLine",
-        "title": "BetterVim: Substitute line (S)"
+        "command": "vinel.substituteLine",
+        "title": "ViNEL: Substitute line (S)"
       },
       {
-        "command": "betterVim.deleteCharBefore",
-        "title": "BetterVim: Delete char before (X)"
+        "command": "vinel.deleteCharBefore",
+        "title": "ViNEL: Delete char before (X)"
       },
       {
-        "command": "betterVim.join",
-        "title": "BetterVim: Join lines (J)"
+        "command": "vinel.join",
+        "title": "ViNEL: Join lines (J)"
       },
       {
-        "command": "betterVim.toggleCase",
-        "title": "BetterVim: Toggle case (~)"
+        "command": "vinel.toggleCase",
+        "title": "ViNEL: Toggle case (~)"
       },
       {
-        "command": "betterVim.indentLines",
-        "title": "BetterVim: Indent lines (>>)"
+        "command": "vinel.indentLines",
+        "title": "ViNEL: Indent lines (>>)"
       },
       {
-        "command": "betterVim.outdentLines",
-        "title": "BetterVim: Outdent lines (<<)"
+        "command": "vinel.outdentLines",
+        "title": "ViNEL: Outdent lines (<<)"
       },
       {
-        "command": "betterVim.wordForwardBig",
-        "title": "BetterVim: WORD forward (W)"
+        "command": "vinel.wordForwardBig",
+        "title": "ViNEL: WORD forward (W)"
       },
       {
-        "command": "betterVim.wordBackwardBig",
-        "title": "BetterVim: WORD backward (B)"
+        "command": "vinel.wordBackwardBig",
+        "title": "ViNEL: WORD backward (B)"
       },
       {
-        "command": "betterVim.wordEndBig",
-        "title": "BetterVim: WORD end (E)"
+        "command": "vinel.wordEndBig",
+        "title": "ViNEL: WORD end (E)"
       },
       {
-        "command": "betterVim.matchBracket",
-        "title": "BetterVim: Matching bracket (%)"
+        "command": "vinel.matchBracket",
+        "title": "ViNEL: Matching bracket (%)"
       },
       {
-        "command": "betterVim.lineUp",
-        "title": "BetterVim: Line up, first non-blank (-)"
+        "command": "vinel.lineUp",
+        "title": "ViNEL: Line up, first non-blank (-)"
       },
       {
-        "command": "betterVim.lineDown",
-        "title": "BetterVim: Line down, first non-blank (+)"
+        "command": "vinel.lineDown",
+        "title": "ViNEL: Line down, first non-blank (+)"
       },
       {
-        "command": "betterVim.lineFirstNonBlank",
-        "title": "BetterVim: First non-blank (_)"
+        "command": "vinel.lineFirstNonBlank",
+        "title": "ViNEL: First non-blank (_)"
       },
       {
-        "command": "betterVim.lineLastNonBlank",
-        "title": "BetterVim: Last non-blank (g_)"
+        "command": "vinel.lineLastNonBlank",
+        "title": "ViNEL: Last non-blank (g_)"
       },
       {
-        "command": "betterVim.screenTop",
-        "title": "BetterVim: Screen top (H)"
+        "command": "vinel.screenTop",
+        "title": "ViNEL: Screen top (H)"
       },
       {
-        "command": "betterVim.screenMiddle",
-        "title": "BetterVim: Screen middle (M)"
+        "command": "vinel.screenMiddle",
+        "title": "ViNEL: Screen middle (M)"
       },
       {
-        "command": "betterVim.screenBottom",
-        "title": "BetterVim: Screen bottom (L)"
+        "command": "vinel.screenBottom",
+        "title": "ViNEL: Screen bottom (L)"
       },
       {
-        "command": "betterVim.searchNext",
-        "title": "BetterVim: Search next (n)"
+        "command": "vinel.searchNext",
+        "title": "ViNEL: Search next (n)"
       },
       {
-        "command": "betterVim.searchPrev",
-        "title": "BetterVim: Search previous (N)"
+        "command": "vinel.searchPrev",
+        "title": "ViNEL: Search previous (N)"
       },
       {
-        "command": "betterVim.starSearch",
-        "title": "BetterVim: Search word under cursor forward (*)"
+        "command": "vinel.starSearch",
+        "title": "ViNEL: Search word under cursor forward (*)"
       },
       {
-        "command": "betterVim.hashSearch",
-        "title": "BetterVim: Search word under cursor backward (#)"
+        "command": "vinel.hashSearch",
+        "title": "ViNEL: Search word under cursor backward (#)"
       },
       {
-        "command": "betterVim.halfPageDown",
-        "title": "BetterVim: Half page down (Ctrl-D)"
+        "command": "vinel.halfPageDown",
+        "title": "ViNEL: Half page down (Ctrl-D)"
       },
       {
-        "command": "betterVim.halfPageUp",
-        "title": "BetterVim: Half page up (Ctrl-U)"
+        "command": "vinel.halfPageUp",
+        "title": "ViNEL: Half page up (Ctrl-U)"
       },
       {
-        "command": "betterVim.pageDown",
-        "title": "BetterVim: Page down (Ctrl-F)"
+        "command": "vinel.pageDown",
+        "title": "ViNEL: Page down (Ctrl-F)"
       },
       {
-        "command": "betterVim.pageUp",
-        "title": "BetterVim: Page up (Ctrl-B)"
+        "command": "vinel.pageUp",
+        "title": "ViNEL: Page up (Ctrl-B)"
       },
       {
-        "command": "betterVim.scrollCenter",
-        "title": "BetterVim: Scroll line to center (zz)"
+        "command": "vinel.scrollCenter",
+        "title": "ViNEL: Scroll line to center (zz)"
       },
       {
-        "command": "betterVim.scrollTop",
-        "title": "BetterVim: Scroll line to top (zt)"
+        "command": "vinel.scrollTop",
+        "title": "ViNEL: Scroll line to top (zt)"
       },
       {
-        "command": "betterVim.scrollBottom",
-        "title": "BetterVim: Scroll line to bottom (zb)"
+        "command": "vinel.scrollBottom",
+        "title": "ViNEL: Scroll line to bottom (zb)"
       },
       {
-        "command": "betterVim.findForward",
-        "title": "BetterVim: Find char forward (f)"
+        "command": "vinel.findForward",
+        "title": "ViNEL: Find char forward (f)"
       },
       {
-        "command": "betterVim.findBackward",
-        "title": "BetterVim: Find char backward (F)"
+        "command": "vinel.findBackward",
+        "title": "ViNEL: Find char backward (F)"
       },
       {
-        "command": "betterVim.tillForward",
-        "title": "BetterVim: Till char forward (t)"
+        "command": "vinel.tillForward",
+        "title": "ViNEL: Till char forward (t)"
       },
       {
-        "command": "betterVim.tillBackward",
-        "title": "BetterVim: Till char backward (T)"
+        "command": "vinel.tillBackward",
+        "title": "ViNEL: Till char backward (T)"
       },
       {
-        "command": "betterVim.replaceChar",
-        "title": "BetterVim: Replace char (r)"
+        "command": "vinel.replaceChar",
+        "title": "ViNEL: Replace char (r)"
       },
       {
-        "command": "betterVim.repeatFind",
-        "title": "BetterVim: Repeat find (;)"
+        "command": "vinel.repeatFind",
+        "title": "ViNEL: Repeat find (;)"
       },
       {
-        "command": "betterVim.repeatFindReverse",
-        "title": "BetterVim: Repeat find reversed (,)"
+        "command": "vinel.repeatFindReverse",
+        "title": "ViNEL: Repeat find reversed (,)"
       },
       {
-        "command": "betterVim.provideChar",
-        "title": "BetterVim: (internal) supply pending char"
+        "command": "vinel.provideChar",
+        "title": "ViNEL: (internal) supply pending char"
       },
       {
-        "command": "betterVim.iKey",
-        "title": "BetterVim: Insert / inner text object (i)"
+        "command": "vinel.iKey",
+        "title": "ViNEL: Insert / inner text object (i)"
       },
       {
-        "command": "betterVim.aKey",
-        "title": "BetterVim: Append / around text object (a)"
+        "command": "vinel.aKey",
+        "title": "ViNEL: Append / around text object (a)"
       },
       {
-        "command": "betterVim.provideTextObject",
-        "title": "BetterVim: (internal) supply text object"
+        "command": "vinel.provideTextObject",
+        "title": "ViNEL: (internal) supply text object"
       },
       {
-        "command": "betterVim.repeatChange",
-        "title": "BetterVim: Repeat last change (.)"
+        "command": "vinel.repeatChange",
+        "title": "ViNEL: Repeat last change (.)"
       }
     ],
     "keybindings": [
@@ -388,1604 +411,1604 @@
         "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "0",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "1",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "2",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "3",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "4",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "5",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "6",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "7",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "8",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "9",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "a",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+a",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "b",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+b",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "c",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+c",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "d",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+d",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "e",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+e",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "f",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+f",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+g",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "h",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+h",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "i",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+i",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "j",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+j",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "k",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+k",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "l",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+l",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "m",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+m",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "n",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+n",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "o",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+o",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "p",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+p",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "q",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+q",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "r",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+r",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "s",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+s",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "t",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+t",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "u",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+u",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "v",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+v",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "w",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+w",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "x",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+x",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "y",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+y",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+z",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+0",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+1",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+2",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+3",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+4",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+5",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+6",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+7",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+8",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+9",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "`",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+`",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "-",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+-",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "=",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+=",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "[",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+[",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "]",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+]",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "\\",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+\\",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": ";",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+;",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "'",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+'",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": ",",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": ".",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "/",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "shift+/",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "space",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "enter",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "backspace",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.suppressKey",
+        "command": "vinel.suppressKey",
         "key": "delete",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.repeatChange",
+        "command": "vinel.repeatChange",
         "key": ".",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.enterNormal",
+        "command": "vinel.enterNormal",
         "key": "escape",
         "when": "editorTextFocus"
       },
       {
-        "command": "betterVim.iKey",
+        "command": "vinel.iKey",
         "key": "i",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.aKey",
+        "command": "vinel.aKey",
         "key": "a",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.appendEol",
+        "command": "vinel.appendEol",
         "key": "shift+a",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.insertFirstNonBlank",
+        "command": "vinel.insertFirstNonBlank",
         "key": "shift+i",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.substituteChar",
+        "command": "vinel.substituteChar",
         "key": "s",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.substituteLine",
+        "command": "vinel.substituteLine",
         "key": "shift+s",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.deleteCharBefore",
+        "command": "vinel.deleteCharBefore",
         "key": "shift+x",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.enterVisual",
+        "command": "vinel.enterVisual",
         "key": "v",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.enterVisualLine",
+        "command": "vinel.enterVisualLine",
         "key": "shift+v",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit0",
+        "command": "vinel.digit0",
         "key": "0",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit1",
+        "command": "vinel.digit1",
         "key": "1",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit2",
+        "command": "vinel.digit2",
         "key": "2",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit3",
+        "command": "vinel.digit3",
         "key": "3",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit4",
+        "command": "vinel.digit4",
         "key": "4",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit5",
+        "command": "vinel.digit5",
         "key": "5",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit6",
+        "command": "vinel.digit6",
         "key": "6",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit7",
+        "command": "vinel.digit7",
         "key": "7",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit8",
+        "command": "vinel.digit8",
         "key": "8",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.digit9",
+        "command": "vinel.digit9",
         "key": "9",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveLeft",
+        "command": "vinel.moveLeft",
         "key": "h",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveLeft",
+        "command": "vinel.moveLeft",
         "key": "left",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveDown",
+        "command": "vinel.moveDown",
         "key": "j",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveDown",
+        "command": "vinel.moveDown",
         "key": "down",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveUp",
+        "command": "vinel.moveUp",
         "key": "k",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveUp",
+        "command": "vinel.moveUp",
         "key": "up",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveRight",
+        "command": "vinel.moveRight",
         "key": "l",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.moveRight",
+        "command": "vinel.moveRight",
         "key": "right",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.wordForward",
+        "command": "vinel.wordForward",
         "key": "w",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.wordBackward",
+        "command": "vinel.wordBackward",
         "key": "b",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.wordEnd",
+        "command": "vinel.wordEnd",
         "key": "e",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.wordForwardBig",
+        "command": "vinel.wordForwardBig",
         "key": "shift+w",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.wordBackwardBig",
+        "command": "vinel.wordBackwardBig",
         "key": "shift+b",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.wordEndBig",
+        "command": "vinel.wordEndBig",
         "key": "shift+e",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.firstNonBlank",
+        "command": "vinel.firstNonBlank",
         "key": "shift+6",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.lineEnd",
+        "command": "vinel.lineEnd",
         "key": "shift+4",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.matchBracket",
+        "command": "vinel.matchBracket",
         "key": "shift+5",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.bufferTop",
+        "command": "vinel.bufferTop",
         "key": "g g",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.bufferBottom",
+        "command": "vinel.bufferBottom",
         "key": "shift+g",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.paragraphBackward",
+        "command": "vinel.paragraphBackward",
         "key": "shift+[",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.paragraphForward",
+        "command": "vinel.paragraphForward",
         "key": "shift+]",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.lineUp",
+        "command": "vinel.lineUp",
         "key": "-",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.lineDown",
+        "command": "vinel.lineDown",
         "key": "shift+=",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.lineFirstNonBlank",
+        "command": "vinel.lineFirstNonBlank",
         "key": "shift+-",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.lineLastNonBlank",
+        "command": "vinel.lineLastNonBlank",
         "key": "g shift+-",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.screenTop",
+        "command": "vinel.screenTop",
         "key": "shift+h",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.screenMiddle",
+        "command": "vinel.screenMiddle",
         "key": "shift+m",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.screenBottom",
+        "command": "vinel.screenBottom",
         "key": "shift+l",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.search",
+        "command": "vinel.search",
         "key": "/",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.searchNext",
+        "command": "vinel.searchNext",
         "key": "n",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.searchPrev",
+        "command": "vinel.searchPrev",
         "key": "shift+n",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.starSearch",
+        "command": "vinel.starSearch",
         "key": "shift+8",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.hashSearch",
+        "command": "vinel.hashSearch",
         "key": "shift+3",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.halfPageDown",
+        "command": "vinel.halfPageDown",
         "key": "ctrl+d",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.halfPageUp",
+        "command": "vinel.halfPageUp",
         "key": "ctrl+u",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.pageDown",
+        "command": "vinel.pageDown",
         "key": "ctrl+f",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.pageUp",
+        "command": "vinel.pageUp",
         "key": "ctrl+b",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.scrollCenter",
+        "command": "vinel.scrollCenter",
         "key": "z z",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.scrollTop",
+        "command": "vinel.scrollTop",
         "key": "z t",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.scrollBottom",
+        "command": "vinel.scrollBottom",
         "key": "z b",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.findForward",
+        "command": "vinel.findForward",
         "key": "f",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.findBackward",
+        "command": "vinel.findBackward",
         "key": "shift+f",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.tillForward",
+        "command": "vinel.tillForward",
         "key": "t",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.tillBackward",
+        "command": "vinel.tillBackward",
         "key": "shift+t",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.repeatFind",
+        "command": "vinel.repeatFind",
         "key": ";",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.repeatFindReverse",
+        "command": "vinel.repeatFindReverse",
         "key": ",",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.replaceChar",
+        "command": "vinel.replaceChar",
         "key": "r",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.opDelete",
+        "command": "vinel.opDelete",
         "key": "d",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.opChange",
+        "command": "vinel.opChange",
         "key": "c",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.opYank",
+        "command": "vinel.opYank",
         "key": "y",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.cutChar",
+        "command": "vinel.cutChar",
         "key": "x",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.pasteAfter",
+        "command": "vinel.pasteAfter",
         "key": "p",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.oKey",
+        "command": "vinel.oKey",
         "key": "o",
-        "when": "editorTextFocus && betterVim.mode != 'insert'"
+        "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
-        "command": "betterVim.deleteToEol",
+        "command": "vinel.deleteToEol",
         "key": "shift+d",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.changeToEol",
+        "command": "vinel.changeToEol",
         "key": "shift+c",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.yankLine",
+        "command": "vinel.yankLine",
         "key": "shift+y",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.pasteBefore",
+        "command": "vinel.pasteBefore",
         "key": "shift+p",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.openAbove",
+        "command": "vinel.openAbove",
         "key": "shift+o",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.undo",
+        "command": "vinel.undo",
         "key": "u",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.redo",
+        "command": "vinel.redo",
         "key": "ctrl+r",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.join",
+        "command": "vinel.join",
         "key": "shift+j",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.toggleCase",
+        "command": "vinel.toggleCase",
         "key": "shift+`",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.indentLines",
+        "command": "vinel.indentLines",
         "key": "shift+. shift+.",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.outdentLines",
+        "command": "vinel.outdentLines",
         "key": "shift+, shift+,",
-        "when": "editorTextFocus && betterVim.mode == 'normal'"
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       },
       {
-        "command": "betterVim.visualDelete",
+        "command": "vinel.visualDelete",
         "key": "delete",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualDelete",
+        "command": "vinel.visualDelete",
         "key": "backspace",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualIndent",
+        "command": "vinel.visualIndent",
         "key": "shift+.",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualOutdent",
+        "command": "vinel.visualOutdent",
         "key": "shift+,",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualJoin",
+        "command": "vinel.visualJoin",
         "key": "shift+j",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualToggleCase",
+        "command": "vinel.visualToggleCase",
         "key": "shift+`",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualLower",
+        "command": "vinel.visualLower",
         "key": "u",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.visualUpper",
+        "command": "vinel.visualUpper",
         "key": "shift+u",
-        "when": "editorTextFocus && (betterVim.mode == 'visual' || betterVim.mode == 'visual-line')"
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "0",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "0"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "1",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "1"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "2",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "2"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "3",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "3"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "4",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "4"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "5",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "5"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "6",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "6"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "7",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "7"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "8",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "8"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "9",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "9"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "a",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "a"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+a",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "A"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "b",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "b"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+b",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "B"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "c",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "c"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+c",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "C"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "d",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "d"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+d",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "D"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "e",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "e"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+e",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "E"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "f",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "f"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+f",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "F"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "g",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "g"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+g",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "G"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "h",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "h"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+h",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "H"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "i",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "i"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+i",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "I"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "j",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "j"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+j",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "J"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "k",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "k"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+k",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "K"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "l",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "l"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+l",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "L"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "m",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "m"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+m",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "M"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "n",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "n"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+n",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "N"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "o",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "o"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+o",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "O"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "p",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "p"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+p",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "P"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "q",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "q"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+q",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "Q"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "r",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "r"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+r",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "R"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "s",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "s"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+s",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "S"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "t",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "t"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+t",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "T"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "u",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "u"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+u",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "U"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "v",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "v"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+v",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "V"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "w",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "w"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+w",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "W"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "x",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "x"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+x",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "X"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "y",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "y"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+y",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "Y"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "z",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "z"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+z",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "Z"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+0",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": ")"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+1",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "!"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+2",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "@"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+3",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "#"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+4",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "$"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+5",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "%"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+6",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "^"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+7",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "&"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+8",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "*"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+9",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "("
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "`",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "`"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+`",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "~"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "-",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "-"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+-",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "_"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "=",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "="
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+=",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "+"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "[",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "["
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+[",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "{"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "]",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "]"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+]",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "}"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "\\",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "\\"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+\\",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "|"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": ";",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": ";"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+;",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": ":"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "'",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "'"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+'",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "\""
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": ",",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": ","
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+,",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "<"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": ".",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "."
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+.",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": ">"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "/",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "/"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "shift+/",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": "?"
       },
       {
-        "command": "betterVim.provideChar",
+        "command": "vinel.provideChar",
         "key": "space",
-        "when": "editorTextFocus && betterVim.awaitingChar",
+        "when": "editorTextFocus && vinel.awaitingChar",
         "args": " "
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "w",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "word"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+w",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "WORD"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+9",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "paren"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+0",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "paren"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "b",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "paren"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+[",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "brace"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+]",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "brace"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+b",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "brace"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "[",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "bracket"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "]",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "bracket"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+,",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "angle"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+.",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "angle"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "shift+'",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "dquote"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "'",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "squote"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "`",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "backtick"
       },
       {
-        "command": "betterVim.provideTextObject",
+        "command": "vinel.provideTextObject",
         "key": "p",
-        "when": "editorTextFocus && betterVim.awaitingTextObject",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "paragraph"
       }
     ]

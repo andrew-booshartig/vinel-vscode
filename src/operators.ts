@@ -624,7 +624,7 @@ export const outdentLines = () => indentCommand('editor.action.outdentLines');
 
 // ── f / F / t / T / r / ; / , — find-char + replace ─────────────────────────
 // The "await one keystroke" layer: f/F/t/T/r set a pending action and turn on
-// the `betterVim.awaitingChar` context key; the next printable key fires
+// the `vinel.awaitingChar` context key; the next printable key fires
 // `provideChar` with its character (declarative, no `type` hijack — see the
 // provideChar bindings in package.json). Find motions double as operator
 // targets (`dt,`, `df)`, `cf"`) by capturing any pending d/c/y.
@@ -636,7 +636,7 @@ let pendingChar: { kind: FindKind | 'r'; operator: OperatorKind | null; count: n
 let lastFind: { kind: FindKind; char: string } | null = null;
 
 function setAwaiting(on: boolean): void {
-  vscode.commands.executeCommand('setContext', 'betterVim.awaitingChar', on);
+  vscode.commands.executeCommand('setContext', 'vinel.awaitingChar', on);
 }
 
 /** Clear a half-typed f/F/t/T/r (Escape). */
@@ -794,7 +794,7 @@ export function repeatFind(reverse: boolean) {
 let pendingTextObject: { around: boolean; operator: OperatorKind | null } | null = null;
 
 function setAwaitingTextObject(on: boolean): void {
-  vscode.commands.executeCommand('setContext', 'betterVim.awaitingTextObject', on);
+  vscode.commands.executeCommand('setContext', 'vinel.awaitingTextObject', on);
 }
 
 /** Clear a half-typed text object (Escape). */
