@@ -116,23 +116,34 @@ function bracketObject(doc: vscode.TextDocument, pos: vscode.Position, open: str
   const text = doc.getText();
   const cursor = doc.offsetAt(pos);
 
-  // Find the enclosing opener.
+  // Find the opener, in priority order:
   let openOff = -1;
   if (text[cursor] === open) {
+    // 1) cursor sits on the opening bracket.
     openOff = cursor;
   } else {
-    let depth = 0;
+    // 2) enclosing pair — scan left, matching nested closes.
+    let d = 0;
     for (let i = cursor - 1; i >= 0; i--) {
-      if (text[i] === close) depth++;
+      if (text[i] === close) d++;
       else if (text[i] === open) {
-        if (depth === 0) { openOff = i; break; }
-        depth--;
+        if (d === 0) { openOff = i; break; }
+        d--;
+      }
+    }
+    // 3) not inside one → seek FORWARD on the current line for the next opener
+    //    (vim: the object is found ahead, so `di[` works from anywhere on the
+    //    line, not only when the cursor is already inside/on the bracket).
+    if (openOff === -1) {
+      const lineEnd = doc.offsetAt(doc.lineAt(pos.line).range.end);
+      for (let j = cursor; j < lineEnd; j++) {
+        if (text[j] === open) { openOff = j; break; }
       }
     }
   }
   if (openOff === -1) return null;
 
-  // Find its match to the right.
+  // Find its match to the right (may cross lines).
   let depth = 0;
   let closeOff = -1;
   for (let j = openOff + 1; j < text.length; j++) {

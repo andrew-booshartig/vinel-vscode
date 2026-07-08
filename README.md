@@ -167,6 +167,11 @@ test, no VS Code commands — and is applied through the same
 - **Objects:** `iw`/`aw` word, `iW`/`aW` WORD, `i"`/`i'`/`` i` `` quotes,
   `i(`/`ib` `i{`/`iB` `i[` `i<` bracket pairs (balanced, multi-line), `ip`/`ap`
   paragraph — each inner and around.
+- **Seek forward:** if the cursor isn't already inside/on a quote or bracket
+  object, it seeks forward on the current line to the next one — so `di[` /
+  `ci"` work from anywhere on the line, not only when you're on top of it
+  (matches how the delimiter objects behave in practice). An enclosing pair
+  always wins over a later one.
 - **Input:** `i`/`a` are context-dependent — a text-object prefix when an
   operator is pending (`diw`) or in Visual (`viw`), otherwise plain
   Insert/append. The object key arrives via a `betterVim.awaitingTextObject`
