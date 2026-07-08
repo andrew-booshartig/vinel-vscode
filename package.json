@@ -351,6 +351,10 @@
       {
         "command": "betterVim.provideTextObject",
         "title": "BetterVim: (internal) supply text object"
+      },
+      {
+        "command": "betterVim.repeatChange",
+        "title": "BetterVim: Repeat last change (.)"
       }
     ],
     "keybindings": [
@@ -852,6 +856,11 @@
         "command": "betterVim.suppressKey",
         "key": "delete",
         "when": "editorTextFocus && betterVim.mode != 'insert'"
+      },
+      {
+        "command": "betterVim.repeatChange",
+        "key": ".",
+        "when": "editorTextFocus && betterVim.mode == 'normal'"
       },
       {
         "command": "betterVim.enterNormal",

@@ -2,6 +2,18 @@ import * as vscode from 'vscode';
 import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingOperatorLabel } from './state';
 import { setRegister, getRegister } from './registers';
 import { textObjectRange, type TextObjectId } from './textobjects';
+import { beginInsertChange, recordChange } from './dotrepeat';
+
+/** Route a completed operator to the dot-repeat recorder: a `change` opens an
+ * insert session (it's already in Insert, so REPLAY reproduces edit + typed
+ * text), a `delete` records a re-run thunk, a `yank` isn't a change. Call
+ * AFTER the operator has applied. */
+function recordOp(op: OperatorKind, replay: (count?: number) => Promise<void>): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  if (op === 'change') beginInsertChange(editor, () => replay());
+  else if (op === 'delete') recordChange(replay);
+}
 
 /**
  * Vim's operator grammar: `[count1] operator [count2] motion`, where the
@@ -64,6 +76,11 @@ export function operatorKey(op: OperatorKind) {
       const n = operatorCount;
       cancelPendingOperator();
       await applyLinewise(editor, op, n);
+      // dd / cc dot-repeat: re-apply N whole lines at the cursor's line.
+      recordOp(op, async (count) => {
+        const e = activeEditor();
+        if (e) await applyLinewise(e, op, count ?? n);
+      });
       return;
     }
 
@@ -99,13 +116,25 @@ export function operatorAwareWordMotion(rawCommand: string) {
     const opCount = operatorCount;
     cancelPendingOperator();
     const motionCount = consumeCount(editor);
-    const start = editor.selection.active;
-    for (let i = 0; i < opCount * motionCount; i++) {
-      await vscode.commands.executeCommand(rawCommand);
-    }
-    const end = editor.selection.active;
-    await applyCharwiseRange(editor, op, start, end);
+    const times = opCount * motionCount;
+    await applyWordMotionOp(editor, op, times, rawCommand);
+    // dw / cw dot-repeat: re-run the word motion + operator at the cursor.
+    recordOp(op, async (count) => {
+      const e = activeEditor();
+      if (e) await applyWordMotionOp(e, op, count ?? times, rawCommand);
+    });
   };
+}
+
+/** Move RAWCOMMAND `times` from the cursor, then apply OP over the span —
+ * the core shared by live `dw`/`cw` and their dot-repeat. */
+async function applyWordMotionOp(editor: vscode.TextEditor, op: OperatorKind, times: number, rawCommand: string): Promise<void> {
+  const start = editor.selection.active;
+  for (let i = 0; i < times; i++) {
+    await vscode.commands.executeCommand(rawCommand);
+  }
+  const end = editor.selection.active;
+  await applyCharwiseRange(editor, op, start, end);
 }
 
 /** Apply OP to the charwise range between A and B (order-independent). */
@@ -238,20 +267,25 @@ export async function visualDelete(): Promise<void> {
 
 // ── Direct-target commands: D / C / Y (to-eol / whole-line yank) ───────────
 
+async function toEol(editor: vscode.TextEditor, op: OperatorKind): Promise<void> {
+  const pos = editor.selection.active;
+  await applyCharwiseRange(editor, op, pos, editor.document.lineAt(pos.line).range.end);
+}
+
 export async function deleteToEol(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
   consumeCount(editor); // vim's D/C don't take a useful count in the common case
-  const pos = editor.selection.active;
-  await applyCharwiseRange(editor, 'delete', pos, editor.document.lineAt(pos.line).range.end);
+  await toEol(editor, 'delete');
+  recordOp('delete', async () => { const e = activeEditor(); if (e) await toEol(e, 'delete'); });
 }
 
 export async function changeToEol(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
   consumeCount(editor);
-  const pos = editor.selection.active;
-  await applyCharwiseRange(editor, 'change', pos, editor.document.lineAt(pos.line).range.end);
+  await toEol(editor, 'change');
+  recordOp('change', async () => { const e = activeEditor(); if (e) await toEol(e, 'change'); });
 }
 
 /** `Y` — standard vim: equivalent to `yy` (yank the whole line), not
@@ -266,15 +300,7 @@ export async function yankLine(): Promise<void> {
 
 // ── x / p / P — character cut, paste after/before ──────────────────────────
 
-export async function cutChar(): Promise<void> {
-  const editor = activeEditor();
-  if (!editor) return;
-  // In visual, `x` deletes the selection (same as `d`).
-  if (isVisual(editor)) {
-    await applyVisualOperator(editor, 'delete');
-    return;
-  }
-  const n = consumeCount(editor);
+async function cutCharCore(editor: vscode.TextEditor, n: number): Promise<void> {
   const pos = editor.selection.active;
   const line = editor.document.lineAt(pos.line);
   const end = new vscode.Position(pos.line, Math.min(pos.character + n, line.text.length));
@@ -284,14 +310,20 @@ export async function cutChar(): Promise<void> {
   await editor.edit((eb) => eb.delete(new vscode.Range(pos, end)));
 }
 
-export async function pasteAfter(): Promise<void> {
+export async function cutChar(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
-  // In visual, `p` pastes OVER the selection (replace it with the register).
+  // In visual, `x` deletes the selection (same as `d`).
   if (isVisual(editor)) {
-    await visualPasteOver(editor);
+    await applyVisualOperator(editor, 'delete');
     return;
   }
+  const n = consumeCount(editor);
+  await cutCharCore(editor, n);
+  recordChange(async (count) => { const e = activeEditor(); if (e) await cutCharCore(e, count ?? n); });
+}
+
+async function pasteAfterCore(editor: vscode.TextEditor): Promise<void> {
   const { text, linewise } = getRegister();
   if (!text) return;
   if (linewise) {
@@ -303,18 +335,26 @@ export async function pasteAfter(): Promise<void> {
   } else {
     const pos = editor.selection.active;
     const line = editor.document.lineAt(pos.line);
-    const insertAt = pos.character < line.text.length
-      ? pos.translate(0, 1)
-      : pos;
+    const insertAt = pos.character < line.text.length ? pos.translate(0, 1) : pos;
     await editor.edit((eb) => eb.insert(insertAt, text));
     const after = insertAt.translate(0, text.length);
     editor.selection = new vscode.Selection(after, after);
   }
 }
 
-export async function pasteBefore(): Promise<void> {
+export async function pasteAfter(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
+  // In visual, `p` pastes OVER the selection (replace it with the register).
+  if (isVisual(editor)) {
+    await visualPasteOver(editor);
+    return;
+  }
+  await pasteAfterCore(editor);
+  recordChange(async () => { const e = activeEditor(); if (e) await pasteAfterCore(e); });
+}
+
+async function pasteBeforeCore(editor: vscode.TextEditor): Promise<void> {
   const { text, linewise } = getRegister();
   if (!text) return;
   if (linewise) {
@@ -328,11 +368,16 @@ export async function pasteBefore(): Promise<void> {
   }
 }
 
-// ── o / O — open a line below/above and enter INSERT ────────────────────────
-
-export async function openBelow(): Promise<void> {
+export async function pasteBefore(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
+  await pasteBeforeCore(editor);
+  recordChange(async () => { const e = activeEditor(); if (e) await pasteBeforeCore(e); });
+}
+
+// ── o / O — open a line below/above and enter INSERT ────────────────────────
+
+async function openBelowCore(editor: vscode.TextEditor): Promise<void> {
   const line = editor.selection.active.line;
   const end = editor.document.lineAt(line).range.end;
   await editor.edit((eb) => eb.insert(end, '\n'));
@@ -342,15 +387,28 @@ export async function openBelow(): Promise<void> {
   setMode(editor, Mode.Insert);
 }
 
-export async function openAbove(): Promise<void> {
+export async function openBelow(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
+  await openBelowCore(editor);
+  // Record AFTER the core: the cursor now sits where typing begins.
+  beginInsertChange(editor, () => { const e = activeEditor(); return e ? openBelowCore(e) : undefined; });
+}
+
+async function openAboveCore(editor: vscode.TextEditor): Promise<void> {
   const line = editor.selection.active.line;
   const start = new vscode.Position(line, 0);
   await editor.edit((eb) => eb.insert(start, '\n'));
   editor.selection = new vscode.Selection(start, start);
   await vscode.commands.executeCommand('editor.action.reindentselectedlines').then(undefined, () => {});
   setMode(editor, Mode.Insert);
+}
+
+export async function openAbove(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  await openAboveCore(editor);
+  beginInsertChange(editor, () => { const e = activeEditor(); return e ? openAboveCore(e) : undefined; });
 }
 
 // ── More visual-mode operators (indent / join / case / paste-over) ──────────
@@ -446,11 +504,7 @@ async function visualPasteOver(editor: vscode.TextEditor): Promise<void> {
 
 // ── s / S / X — substitute char / line, delete-before ───────────────────────
 
-/** `s` — delete `count` chars under the cursor and enter INSERT (= `cl`). */
-export async function substituteChar(): Promise<void> {
-  const editor = activeEditor();
-  if (!editor) return;
-  const n = consumeCount(editor);
+async function substituteCharCore(editor: vscode.TextEditor, n: number): Promise<void> {
   const pos = editor.selection.active;
   const line = editor.document.lineAt(pos.line);
   const end = Math.min(pos.character + n, line.text.length);
@@ -462,19 +516,25 @@ export async function substituteChar(): Promise<void> {
   setMode(editor, Mode.Insert);
 }
 
+/** `s` — delete `count` chars under the cursor and enter INSERT (= `cl`). */
+export async function substituteChar(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  await substituteCharCore(editor, n);
+  beginInsertChange(editor, () => { const e = activeEditor(); return e ? substituteCharCore(e, n) : undefined; });
+}
+
 /** `S` — substitute whole line, identical to `cc`. */
 export async function substituteLine(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
   const n = consumeCount(editor);
   await applyLinewise(editor, 'change', n);
+  beginInsertChange(editor, () => { const e = activeEditor(); return e ? applyLinewise(e, 'change', n) : undefined; });
 }
 
-/** `X` — delete `count` chars BEFORE the cursor (mirror of `x`). */
-export async function deleteCharBefore(): Promise<void> {
-  const editor = activeEditor();
-  if (!editor) return;
-  const n = consumeCount(editor);
+async function deleteCharBeforeCore(editor: vscode.TextEditor, n: number): Promise<void> {
   const pos = editor.selection.active;
   const begCol = Math.max(0, pos.character - n);
   if (begCol >= pos.character) return;
@@ -483,24 +543,35 @@ export async function deleteCharBefore(): Promise<void> {
   await editor.edit((eb) => eb.delete(range));
 }
 
+/** `X` — delete `count` chars BEFORE the cursor (mirror of `x`). */
+export async function deleteCharBefore(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  await deleteCharBeforeCore(editor, n);
+  recordChange(async (count) => { const e = activeEditor(); if (e) await deleteCharBeforeCore(e, count ?? n); });
+}
+
 // ── J / ~ / >> / << — Normal-mode line operations ───────────────────────────
+
+async function joinCore(editor: vscode.TextEditor, count: number): Promise<void> {
+  const joins = Math.max(1, count - 1);
+  for (let i = 0; i < joins; i++) {
+    await vscode.commands.executeCommand('editor.action.joinLines');
+  }
+}
 
 /** `J` — join `count` lines (native join; `count` lines means `count-1` joins,
  * with a bare `J` = current + next). */
 export async function normalJoin(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
-  const joins = Math.max(1, consumeCount(editor) - 1);
-  for (let i = 0; i < joins; i++) {
-    await vscode.commands.executeCommand('editor.action.joinLines');
-  }
+  const n = consumeCount(editor);
+  await joinCore(editor, n);
+  recordChange(async (count) => { const e = activeEditor(); if (e) await joinCore(e, count ?? n); });
 }
 
-/** `~` — toggle the case of `count` chars under the cursor and advance. */
-export async function normalToggleCase(): Promise<void> {
-  const editor = activeEditor();
-  if (!editor) return;
-  const n = consumeCount(editor);
+async function toggleCaseCore(editor: vscode.TextEditor, n: number): Promise<void> {
   const pos = editor.selection.active;
   const line = editor.document.lineAt(pos.line);
   const end = Math.min(pos.character + n, line.text.length);
@@ -514,8 +585,16 @@ export async function normalToggleCase(): Promise<void> {
   editor.selection = new vscode.Selection(landing, landing);
 }
 
-async function indentOutdent(editor: vscode.TextEditor, command: string): Promise<void> {
+/** `~` — toggle the case of `count` chars under the cursor and advance. */
+export async function normalToggleCase(): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
   const n = consumeCount(editor);
+  await toggleCaseCore(editor, n);
+  recordChange(async (count) => { const e = activeEditor(); if (e) await toggleCaseCore(e, count ?? n); });
+}
+
+async function indentOutdent(editor: vscode.TextEditor, command: string, n: number): Promise<void> {
   const startLine = editor.selection.active.line;
   const endLine = Math.min(startLine + n - 1, editor.document.lineCount - 1);
   editor.selection = new vscode.Selection(
@@ -530,16 +609,18 @@ async function indentOutdent(editor: vscode.TextEditor, command: string): Promis
   editor.selection = new vscode.Selection(pos, pos);
 }
 
+async function indentCommand(command: string): Promise<void> {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  await indentOutdent(editor, command, n);
+  recordChange(async (count) => { const e = activeEditor(); if (e) await indentOutdent(e, command, count ?? n); });
+}
+
 /** `>>` — indent `count` lines. */
-export const indentLines = () => {
-  const editor = activeEditor();
-  return editor ? indentOutdent(editor, 'editor.action.indentLines') : undefined;
-};
+export const indentLines = () => indentCommand('editor.action.indentLines');
 /** `<<` — outdent `count` lines. */
-export const outdentLines = () => {
-  const editor = activeEditor();
-  return editor ? indentOutdent(editor, 'editor.action.outdentLines') : undefined;
-};
+export const outdentLines = () => indentCommand('editor.action.outdentLines');
 
 // ── f / F / t / T / r / ; / , — find-char + replace ─────────────────────────
 // The "await one keystroke" layer: f/F/t/T/r set a pending action and turn on
@@ -639,6 +720,11 @@ async function doFind(
       b = new vscode.Position(line, startCol);
     }
     await applyCharwiseRange(editor, operator, a, b);
+    // dt,/df)/cf" dot-repeat: re-run the find + operator at the cursor.
+    recordOp(operator, async () => {
+      const e = activeEditor();
+      if (e) await doFind(e, kind, char, count, operator);
+    });
     return;
   }
 
@@ -671,9 +757,14 @@ export async function provideChar(char?: unknown): Promise<void> {
   if (!editor || !pc || typeof char !== 'string' || char.length === 0) return;
 
   if (pc.kind === 'r') {
-    await replaceChars(editor, char, pc.count);
+    const n = pc.count;
+    const ch = char;
+    await replaceChars(editor, ch, n);
+    // `r` dot-repeat: replace again at the cursor with the same char.
+    recordChange(async (count) => { const e = activeEditor(); if (e) await replaceChars(e, ch, count ?? n); });
     return;
   }
+  // doFind records its own dot-repeat when an operator is pending (dt,/cf").
   await doFind(editor, pc.kind, char, pc.count, pc.operator);
 }
 
@@ -734,26 +825,42 @@ export async function provideTextObject(id?: unknown): Promise<void> {
   pendingTextObject = null;
   setAwaitingTextObject(false);
   if (!editor || !pt || typeof id !== 'string') return;
-
-  const result = textObjectRange(editor.document, editor.selection.active, id as TextObjectId, pt.around);
-  if (!result) return; // no such object under the cursor → no-op, like vim
+  const objectId = id as TextObjectId;
 
   if (pt.operator) {
-    if (result.linewise) {
-      // Route linewise objects (ip/ap) through the dd/cc/yy path so registers
-      // and cc-indent behave correctly.
-      const startLine = result.range.start.line;
-      let endLine = result.range.end.line;
-      if (result.range.end.character === 0 && endLine > startLine) endLine -= 1;
-      const top = new vscode.Position(startLine, 0);
-      editor.selection = new vscode.Selection(top, top);
-      await applyLinewise(editor, pt.operator, endLine - startLine + 1);
-    } else {
-      await applyCharwiseRange(editor, pt.operator, result.range.start, result.range.end);
-    }
+    const op = pt.operator;
+    const around = pt.around;
+    await applyTextObjectOp(editor, op, objectId, around);
+    // diw/ciw/di(/… dot-repeat: recompute the object at the cursor + re-apply.
+    recordOp(op, async () => {
+      const e = activeEditor();
+      if (e) await applyTextObjectOp(e, op, objectId, around);
+    });
     return;
   }
 
   // Visual: set the selection to the object span.
+  const result = textObjectRange(editor.document, editor.selection.active, objectId, pt.around);
+  if (!result) return;
   editor.selection = new vscode.Selection(result.range.start, result.range.end);
+}
+
+/** Recompute a text object at the cursor and apply OP — shared by live
+ * `diw`/`ciw`/… and their dot-repeat. Returns false if there's no object. */
+async function applyTextObjectOp(editor: vscode.TextEditor, op: OperatorKind, id: TextObjectId, around: boolean): Promise<boolean> {
+  const result = textObjectRange(editor.document, editor.selection.active, id, around);
+  if (!result) return false; // no such object → no-op, like vim
+  if (result.linewise) {
+    // Route linewise objects (ip/ap) through the dd/cc/yy path so registers
+    // and cc-indent behave correctly.
+    const startLine = result.range.start.line;
+    let endLine = result.range.end.line;
+    if (result.range.end.character === 0 && endLine > startLine) endLine -= 1;
+    const top = new vscode.Position(startLine, 0);
+    editor.selection = new vscode.Selection(top, top);
+    await applyLinewise(editor, op, endLine - startLine + 1);
+  } else {
+    await applyCharwiseRange(editor, op, result.range.start, result.range.end);
+  }
+  return true;
 }

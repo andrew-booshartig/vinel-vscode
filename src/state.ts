@@ -205,6 +205,13 @@ export function consumeCount(editor: vscode.TextEditor): number {
   return Math.max(1, n);
 }
 
+/** Preload the count buffer to N — used by dot-repeat replay thunks to
+ * re-invoke a count-consuming handler with the recorded count (the handler's
+ * own `consumeCount` then reads it back). */
+export function setPendingCount(n: number): void {
+  pendingCount = n > 1 ? String(n) : '';
+}
+
 /** Run COMMAND N times in sequence — the fallback repeat path for commands
  * that have NO native count argument (word motions `cursorWordStartRight`
  * etc., `cursorLeft`/`cursorRight`). A loop keeps it unconditionally correct

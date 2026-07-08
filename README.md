@@ -7,28 +7,12 @@ VSCodeVim's worst problems" below).
 
 ## What's here so far
 
-**A general Tab/snippet fix** (declarative, no code): `tabout`'s own default
-keybinding only checks `!suggestWidgetVisible` — it doesn't exclude
-`inSnippetMode`. So while you're on a snippet tabstop and the completion
-dropdown just isn't open at that instant (common — punctuation fields, the
-first keystroke before suggestions populate), both "jump to next tabstop" and
-"tabout" become eligible for Tab, and tabout tends to win, yanking you out of
-the snippet. This extension unbinds tabout's unqualified defaults and
-re-declares them with `!inSnippetMode` added, so snippet-tabstop navigation
-always wins while a snippet is active — VSCode's own built-in
-`jumpToNextSnippetPlaceholder`/`jumpToPrevSnippetPlaceholder` handle the rest,
-untouched. Tab also never accepts a suggestion — only Enter does.
-
-(Anything tied to a *specific* snippet body — e.g. "tab out of a particular
-snippet's brace" — is a personal workflow detail, not general modal-editor
-behavior, and lives outside this repo.)
-
 **The modal engine — Milestone 1 (`src/state.ts`, `src/motions.ts`,
 `src/extension.ts`).** NORMAL/INSERT modes — vim's own names, not an invented
 vocabulary — following standard vim semantics as the target. (An earlier
 Emacs-based prototype used its own POWER/EDIT terminology and had a few
 Emacs-specific workarounds baked in — e.g. its `0`/`,` split; that prototype
-is a reference for *mechanism*, not a spec copied verbatim — see the `0`/`$`/
+is a reference for _mechanism_, not a spec copied verbatim — see the `0`/`$`/
 `^` notes in `motions.ts`.) Where VSCode already does something excellently,
 this uses it directly rather than reimplementing vim on top of it — `/` opens
 VSCode's own native Find instead of a hand-built vim search.
@@ -50,7 +34,7 @@ VSCode's own native Find instead of a hand-built vim search.
   this), `/` (native Find).
 
 **Known, deliberate v1 simplification:** real vim's cursor occupies a
-character *cell* (can't move past the last character on a line; `$` lands ON
+character _cell_ (can't move past the last character on a line; `$` lands ON
 it, not after). This milestone uses the conventional between-characters
 model VSCode/Emacs both use (`$` = `cursorEnd`, lands after the last char).
 Adopting the full character-cell model would touch nearly every motion —
@@ -61,7 +45,7 @@ Vim's operator grammar: `[count1] operator [count2] motion` — the effective
 repeat is count1 × count2 (`2d3w` deletes 6 words), or a doubled operator
 letter (`dd`/`cc`/`yy`) meaning "N whole lines" from count1 alone. Scoped to
 the highest-frequency subset first — text objects (`ci"`, `da(`) and
-generalizing to *any* motion (`dG`, `d}`) are follow-ons; the range-based
+generalizing to _any_ motion (`dG`, `d}`) are follow-ons; the range-based
 architecture here already supports them once wired up.
 
 - **`d` / `c` / `y`** — open a pending operator (status bar shows e.g. `d…`),
@@ -70,10 +54,10 @@ architecture here already supports them once wired up.
   `cc` instead empties down to ONE line and drops into INSERT, keeping vim's
   `autoindent` behavior: the new empty line preserves the changed line's own
   indentation (`    foo` → an empty line still indented to column 4). The one
-  case that has no indent to preserve — an *already-blank* line inside an
+  case that has no indent to preserve — an _already-blank_ line inside an
   indented block (VSCodeVim #1017) — falls back to VS Code's own language-
   aware reindenter (the same mechanism `o`/`O` use) to compute the block's
-  indent. (Reindenting *unconditionally* was wrong: on a content line the
+  indent. (Reindenting _unconditionally_ was wrong: on a content line the
   reindenter often recomputes to zero and eats the indent you had — so it's
   scoped to only the blank-line case.) Verified the range math against an
   offset-based splice simulation (both the indent-preserving and blank-line
@@ -112,7 +96,7 @@ Milestone-2 machinery (`applyCharwiseRange`, `applyLinewise`, the register).
 - **`d` / `c` / `y` / `x`** act on the selection immediately (no
   pending-operator wait); **`p`** pastes over it; **`o`** jumps to the other
   end. `>` / `<` indent, `J` joins, `~` / `u` / `U` change case — each returns
-  to Normal after. (`u` in visual is *lowercase*, real vim — distinct from
+  to Normal after. (`u` in visual is _lowercase_, real vim — distinct from
   Normal `u` = undo.)
 - **Delete / Backspace delete the selection** — the one deliberate QoL
   addition over strict vim, faster than `d`.
@@ -123,7 +107,7 @@ Milestone-2 machinery (`applyCharwiseRange`, `applyLinewise`, the register).
   deferred to that same future decision.
 
 **Input suppression (Normal + Visual behave like vim for unbound keys).** In
-vim, a key with no command in Normal mode does *nothing* — it never types.
+vim, a key with no command in Normal mode does _nothing_ — it never types.
 VS Code's default is the opposite: an unbound printable key types its
 character (and in Visual would replace the whole selection). BetterVim closes
 that with a block of no-op bindings covering every printable key (plus
@@ -133,7 +117,7 @@ last-match-wins resolution. Net effect: only keys we've actually bound do
 anything in Normal/Visual; everything else is silent, exactly like vim. Insert
 mode is untouched (typing stays 100% native). Adding a real command later
 "wins" for free, so this needs no per-key maintenance. (Chord prefixes `g`,
-`z`, `>`, `<` are deliberately *not* suppressed — a lone-key binding would
+`z`, `>`, `<` are deliberately _not_ suppressed — a lone-key binding would
 pre-empt their chords `gg`/`zz`/`>>`/`<<`.)
 
 **The modal engine — daily-driver Normal-mode coverage.** The everyday commands
@@ -178,8 +162,25 @@ test, no VS Code commands — and is applied through the same
   keystroke layer (the same await-a-keystroke pattern as find-char), so no
   `type` hijack. Off any object (`ci"` with no quotes) it's a no-op, like vim.
 
-**Not yet built** (future milestones): dot-repeat `.`, macros (likely delegate
-to the `kb-macro` extension), marks (`m`/`` ` ``/`'`), named registers (`"a`),
+**The modal engine — dot-repeat (`.`) (`src/dotrepeat.ts`).** Repeat the last
+change. Non-insert changes (`x`, `dd`, `dw`, `diw`, `dt,`, `>>`, `J`, `~`, `r`,
+`p`, …) record a thunk that RE-COMPUTES at the current cursor, so `.` acts
+wherever you are. Insert-entering changes (`ciw`, `cc`, `C`, `s`, `o`, `A`,
+`i`, …) also capture the text you typed: on entering Insert the cursor position
+is remembered, and on Escape the document span from there to the cursor IS the
+typed text — so `.` replays the operator *and* the text (e.g. `ciwfoo<Esc>`
+then `.` changes the next word to `foo`).
+
+- **No per-keystroke listener.** The typed text is read once, at Escape (no
+  `onDidChangeTextDocument`) — consistent with the scaling invariants.
+- **Count override:** `N.` repeats with count N (`x` then `3.` deletes three).
+- **Yank isn't a change** — `.` never repeats `y`/`yy`.
+- Known limits (pragmatic): moving the cursor with arrows *mid-insert* can skew
+  the captured text (linear typing is exact — vim has its own quirks here); an
+  insert-change `.` may be 1–2 undo stops (best-effort merged).
+
+**Not yet built** (future milestones): macros (likely delegate to the
+`kb-macro` extension), marks (`m`/`` ` ``/`'`), named registers (`"a`),
 ex-commands (`:`, `:%s/` → native find/replace), blockwise visual (`Ctrl-V`),
 replace mode `R`, tag/sentence text objects (`it`/`at`, `is`/`as`), and
 `>{motion}` as a full indent operator. Each is safe to add incrementally —
@@ -205,7 +206,7 @@ most-upvoted complaints, and they need to stay true as more gets built:
   desynced shadow undo tree. `undo`/`redo` here call VS Code's own commands
   directly; there is no parallel undo history to fall out of sync.
 - **Multi-count operators are already atomic.** `3dd`/`2d3w` compute the full
-  target range *before* editing, so each is exactly one `editor.edit()` call
+  target range _before_ editing, so each is exactly one `editor.edit()` call
   = one undo entry — pressing `u` once undoes the whole thing.
 - **Macro requirement (future milestone, not built yet, but locked in now):**
   when macro replay is built, it must batch every edit into a single undo
@@ -246,7 +247,7 @@ preserve:
 - **No per-keystroke document processing.** There is deliberately **no**
   `onDidChangeTextDocument` handler — nothing re-parses or re-scans the buffer
   on every edit. The only event subscribed is `onDidChangeActiveTextEditor`
-  (fires on *tab switch*, not on typing), and its handler is O(1): set a
+  (fires on _tab switch_, not on typing), and its handler is O(1): set a
   context key, cursor style, and status-bar text. This is the single biggest
   reason a 50k-line file feels the same as a 50-line one.
 - **Edits are one atomic operation regardless of count.** `1000dd` computes

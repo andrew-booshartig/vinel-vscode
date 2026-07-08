@@ -6,6 +6,7 @@ import {
 } from './state';
 import * as motions from './motions';
 import * as operators from './operators';
+import * as dotrepeat from './dotrepeat';
 
 /**
  * BetterVim — a native modal-editing state machine for VSCode. Not an
@@ -35,6 +36,8 @@ import * as operators from './operators';
 function enterNormal(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
+  // Leaving Insert → finalize the dot-repeat change (captures the typed text).
+  if (getMode(editor) === Mode.Insert) dotrepeat.finishInsertChange(editor);
   operators.cancelPendingOperator();   // Escape cancels a half-typed d/c/y, like vim
   operators.cancelPendingChar();       // …and a half-typed f/t/r
   operators.cancelPendingTextObject(); // …and a half-typed i/a text object
@@ -46,41 +49,60 @@ function enterNormal(): void {
   setMode(editor, Mode.Normal); // also clears the linewise anchor
 }
 
+// Each insert-entry positions the cursor + enters Insert. The `…Core` form is
+// what dot-repeat re-runs (reproduces the pre-typing position, ends in Insert);
+// the command runs it, then registers it — recording AFTER so the session's
+// start is the actual insertion point.
+function active(): vscode.TextEditor | undefined { return vscode.window.activeTextEditor; }
+
 function enterInsert(): void {
-  const editor = vscode.window.activeTextEditor;
+  const editor = active();
   if (!editor) return;
   setMode(editor, Mode.Insert);
+  dotrepeat.beginInsertChange(editor, () => { const e = active(); if (e) setMode(e, Mode.Insert); });
 }
 
-/** `a` — append: one char right (clamped to line end), then INSERT. */
-function append(): void {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
+function appendCore(editor: vscode.TextEditor): void {
   const pos = editor.selection.active;
   const line = editor.document.lineAt(pos.line);
   const p = new vscode.Position(pos.line, Math.min(pos.character + 1, line.text.length));
   editor.selection = new vscode.Selection(p, p);
   setMode(editor, Mode.Insert);
 }
-
-/** `A` — append at end of line, then INSERT. */
-function appendEol(): void {
-  const editor = vscode.window.activeTextEditor;
+/** `a` — append: one char right (clamped to line end), then INSERT. */
+function append(): void {
+  const editor = active();
   if (!editor) return;
+  appendCore(editor);
+  dotrepeat.beginInsertChange(editor, () => { const e = active(); if (e) appendCore(e); });
+}
+
+function appendEolCore(editor: vscode.TextEditor): void {
   const end = editor.document.lineAt(editor.selection.active.line).range.end;
   editor.selection = new vscode.Selection(end, end);
   setMode(editor, Mode.Insert);
 }
-
-/** `I` — insert at first non-blank of the line, then INSERT. */
-function insertFirstNonBlank(): void {
-  const editor = vscode.window.activeTextEditor;
+/** `A` — append at end of line, then INSERT. */
+function appendEol(): void {
+  const editor = active();
   if (!editor) return;
+  appendEolCore(editor);
+  dotrepeat.beginInsertChange(editor, () => { const e = active(); if (e) appendEolCore(e); });
+}
+
+function insertFirstNonBlankCore(editor: vscode.TextEditor): void {
   const line = editor.document.lineAt(editor.selection.active.line);
   const i = line.text.search(/\S/);
   const p = new vscode.Position(line.lineNumber, i === -1 ? 0 : i);
   editor.selection = new vscode.Selection(p, p);
   setMode(editor, Mode.Insert);
+}
+/** `I` — insert at first non-blank of the line, then INSERT. */
+function insertFirstNonBlank(): void {
+  const editor = active();
+  if (!editor) return;
+  insertFirstNonBlankCore(editor);
+  dotrepeat.beginInsertChange(editor, () => { const e = active(); if (e) insertFirstNonBlankCore(e); });
 }
 
 /** `i` — context-dependent: a text-object prefix (inner) when an operator is
@@ -209,6 +231,13 @@ function redo(): void {
   vscode.commands.executeCommand('redo');
 }
 
+/** `.` — repeat the last change. `N.` overrides the recorded count. */
+function repeat(): void | Thenable<void> {
+  const editor = vscode.window.activeTextEditor;
+  const count = editor ? consumeCount(editor) : 1;
+  return dotrepeat.repeatChange(count > 1 ? count : undefined);
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   createStatusBarItem(context);
 
@@ -268,6 +297,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ['betterVim.oKey', oKey],
     ['betterVim.undo', undo],
     ['betterVim.redo', redo],
+    ['betterVim.repeatChange', repeat],
 
     // Visual-mode operators
     ['betterVim.visualDelete', operators.visualDelete],
