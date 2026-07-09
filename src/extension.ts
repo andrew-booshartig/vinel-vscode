@@ -8,6 +8,7 @@ import * as motions from './motions';
 import * as operators from './operators';
 import * as dotrepeat from './dotrepeat';
 import * as excommand from './excommand';
+import * as marks from './marks';
 
 /**
  * ViNEL — a native modal-editing state machine for VSCode. Not an
@@ -42,6 +43,8 @@ function enterNormal(): void {
   operators.cancelPendingOperator();   // Escape cancels a half-typed d/c/y, like vim
   operators.cancelPendingChar();       // …and a half-typed f/t/r
   operators.cancelPendingTextObject(); // …and a half-typed i/a text object
+  operators.cancelPendingRegister();   // …and a dangling " register prefix
+  marks.cancelPendingMark();           // …and a half-typed m/`/'
   // Leaving visual: collapse the selection back to a caret (vim's Escape).
   if (isVisual(editor)) {
     const pos = editor.selection.active;
@@ -300,6 +303,14 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.redo', redo],
     ['vinel.repeatChange', repeat],
     ['vinel.exCommand', excommand.promptEx],
+
+    // Marks + named registers
+    ['vinel.setMark', marks.markSet],
+    ['vinel.jumpMarkExact', marks.markJumpExact],
+    ['vinel.jumpMarkLine', marks.markJumpLine],
+    ['vinel.provideMark', marks.provideMark],
+    ['vinel.registerPrefix', operators.registerPrefix],
+    ['vinel.provideRegister', operators.provideRegister],
 
     // Visual-mode operators
     ['vinel.visualDelete', operators.visualDelete],

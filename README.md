@@ -69,6 +69,17 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `.` | **Repeat the last change** (incl. text typed in an insert change; `N.` overrides the count) |
 | `:` | **Ex command line** (see below) |
 
+### Marks & registers
+| Key | Action |
+|-----|--------|
+| `m{a-z}` | Set a mark at the cursor (per-file) |
+| `` `{a-z} `` | Jump to the mark (exact position) — also an operator target (`` d`a ``) |
+| `'{a-z}` | Jump to the mark's line (first non-blank) — linewise target (`d'a`) |
+| `` `` `` / `''` | Jump back to where you were before the last jump |
+| `"{a-z}` + op | Use a named register (`"ayy` yanks to `a`, `"ap` pastes from it) |
+| `"{A-Z}` + op | Append to a register (`"Ayy`) |
+| `"_` + op | Black-hole register (delete without clobbering the yank) |
+
 ### Ex-commands (`:`)
 Opens VS Code's input box; Enter runs, Escape cancels.
 

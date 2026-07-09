@@ -382,6 +382,30 @@
       {
         "command": "vinel.exCommand",
         "title": "ViNEL: Ex command line (:)"
+      },
+      {
+        "command": "vinel.setMark",
+        "title": "ViNEL: Set mark (m)"
+      },
+      {
+        "command": "vinel.jumpMarkExact",
+        "title": "ViNEL: Jump to mark (`)"
+      },
+      {
+        "command": "vinel.jumpMarkLine",
+        "title": "ViNEL: Jump to mark line (')"
+      },
+      {
+        "command": "vinel.provideMark",
+        "title": "ViNEL: (internal) supply mark letter"
+      },
+      {
+        "command": "vinel.registerPrefix",
+        "title": "ViNEL: Register prefix (\")"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "title": "ViNEL: (internal) supply register"
       }
     ],
     "keybindings": [
@@ -882,6 +906,26 @@
       {
         "command": "vinel.suppressKey",
         "key": "delete",
+        "when": "editorTextFocus && vinel.mode != 'insert'"
+      },
+      {
+        "command": "vinel.setMark",
+        "key": "m",
+        "when": "editorTextFocus && vinel.mode != 'insert'"
+      },
+      {
+        "command": "vinel.jumpMarkExact",
+        "key": "`",
+        "when": "editorTextFocus && vinel.mode != 'insert'"
+      },
+      {
+        "command": "vinel.jumpMarkLine",
+        "key": "'",
+        "when": "editorTextFocus && vinel.mode != 'insert'"
+      },
+      {
+        "command": "vinel.registerPrefix",
+        "key": "shift+'",
         "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {
@@ -2019,6 +2063,492 @@
         "key": "p",
         "when": "editorTextFocus && vinel.awaitingTextObject",
         "args": "paragraph"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "a",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "a"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "b",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "b"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "c",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "c"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "d",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "d"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "e",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "e"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "f",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "f"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "g",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "g"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "h",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "h"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "i",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "i"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "j",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "j"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "k",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "k"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "l",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "l"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "m",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "m"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "n",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "n"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "o",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "o"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "p",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "p"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "q",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "q"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "r",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "r"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "s",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "s"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "t",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "t"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "u",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "u"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "v",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "v"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "w",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "w"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "x",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "x"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "y",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "y"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "z",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "z"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "`",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "`"
+      },
+      {
+        "command": "vinel.provideMark",
+        "key": "'",
+        "when": "editorTextFocus && vinel.awaitingMark",
+        "args": "'"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "a",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "a"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "b",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "b"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "c",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "c"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "d",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "d"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "e",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "e"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "f",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "f"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "g",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "g"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "h",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "h"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "i",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "i"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "j",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "j"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "k",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "k"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "l",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "l"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "m",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "m"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "n",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "n"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "o",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "o"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "p",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "p"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "q",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "q"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "r",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "r"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "s",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "s"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "t",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "t"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "u",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "u"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "v",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "v"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "w",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "w"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "x",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "x"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "y",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "y"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "z",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "z"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+a",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "A"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+b",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "B"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+c",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "C"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+d",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "D"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+e",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "E"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+f",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "F"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+g",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "G"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+h",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "H"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+i",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "I"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+j",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "J"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+k",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "K"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+l",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "L"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+m",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "M"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+n",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "N"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+o",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "O"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+p",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "P"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+q",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "Q"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+r",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "R"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+s",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "S"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+t",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "T"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+u",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "U"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+v",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "V"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+w",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "W"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+x",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "X"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+y",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "Y"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+z",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "Z"
+      },
+      {
+        "command": "vinel.provideRegister",
+        "key": "shift+-",
+        "when": "editorTextFocus && vinel.awaitingRegister",
+        "args": "_"
       }
     ]
   },

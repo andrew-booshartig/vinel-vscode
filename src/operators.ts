@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingOperatorLabel } from './state';
-import { setRegister, getRegister } from './registers';
+import { setRegister, getRegister, setPendingRegister, clearPendingRegister } from './registers';
 import { textObjectRange, type TextObjectId } from './textobjects';
 import { beginInsertChange, recordChange } from './dotrepeat';
 
@@ -51,6 +51,15 @@ export function cancelPendingOperator(): void {
   pendingOperator = null;
   operatorCount = 1;
   setPendingOperatorLabel(null);
+}
+
+/** Consume the pending operator (kind + count) and clear it, or null if none.
+ * Used by mark targets (`` d`a ``) — same capture find-char does internally. */
+export function takePendingOperator(): { op: OperatorKind; count: number } | null {
+  if (pendingOperator === null) return null;
+  const taken = { op: pendingOperator, count: operatorCount };
+  cancelPendingOperator();
+  return taken;
 }
 
 function activeEditor(): vscode.TextEditor | undefined {
@@ -138,7 +147,7 @@ async function applyWordMotionOp(editor: vscode.TextEditor, op: OperatorKind, ti
 }
 
 /** Apply OP to the charwise range between A and B (order-independent). */
-async function applyCharwiseRange(
+export async function applyCharwiseRange(
   editor: vscode.TextEditor,
   op: OperatorKind,
   a: vscode.Position,
@@ -227,6 +236,40 @@ async function applyLinewise(editor: vscode.TextEditor, op: OperatorKind, n: num
   const landingLine = Math.min(startLine, doc.lineCount - 1);
   const pos = new vscode.Position(landingLine, 0);
   editor.selection = new vscode.Selection(pos, pos);
+}
+
+/** Apply OP over the whole lines [startLine..endLine] — used by linewise mark
+ * targets (`d'a`, `y'a`). Parks the cursor at the top line, reuses the dd/cc/yy
+ * path so registers + cc-indent behave correctly. */
+export async function applyLinewiseRange(editor: vscode.TextEditor, op: OperatorKind, startLine: number, endLine: number): Promise<void> {
+  const top = Math.min(startLine, endLine);
+  const bot = Math.max(startLine, endLine);
+  const pos = new vscode.Position(top, 0);
+  editor.selection = new vscode.Selection(pos, pos);
+  await applyLinewise(editor, op, bot - top + 1);
+}
+
+// ── Register prefix `"` — retarget the next yank/delete/paste ────────────────
+
+function setAwaitingRegister(on: boolean): void {
+  vscode.commands.executeCommand('setContext', 'vinel.awaitingRegister', on);
+}
+
+/** `"` — the next key names a register for the following operation. */
+export function registerPrefix(): void {
+  setAwaitingRegister(true);
+}
+
+/** The register letter after `"` (delivered as arg). */
+export function provideRegister(ch?: unknown): void {
+  setAwaitingRegister(false);
+  if (typeof ch === 'string' && ch.length > 0) setPendingRegister(ch);
+}
+
+/** Escape — drop a half-typed `"` and any pending register target. */
+export function cancelPendingRegister(): void {
+  setAwaitingRegister(false);
+  clearPendingRegister();
 }
 
 // ── Visual-mode operators: apply d/c/y to the live selection ────────────────
