@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingCount, setPendingOperatorLabel } from './state';
-import { setRegister, getRegister, setPendingRegister, clearPendingRegister, readRegister } from './registers';
+import { setRegister, getRegister, setPendingRegister, clearPendingRegister } from './registers';
 import { textObjectRange, type TextObjectId } from './textobjects';
 import { beginInsertChange, recordChange } from './dotrepeat';
 
@@ -755,29 +755,8 @@ function setAwaiting(on: boolean): void {
 /** Clear a half-typed f/F/t/T/r or surround (Escape). */
 export function cancelPendingChar(): void {
   pendingChar = null;
-  pendingInsertRegister = false;
   cancelPendingSurround();
   setAwaiting(false);
-}
-
-// Insert-mode `Ctrl-R{reg}` — the next key names a register whose text is
-// inserted at the cursor (native Insert typing is otherwise untouched).
-let pendingInsertRegister = false;
-
-/** `Ctrl-R` in Insert — await the register letter. */
-export function insertRegisterStart(): void {
-  pendingInsertRegister = true;
-  setAwaiting(true);
-}
-
-async function insertRegister(editor: vscode.TextEditor, name: string): Promise<void> {
-  const text = readRegister(name === '"' ? undefined : name);
-  if (!text) return;
-  const at = editor.selection.active;
-  const endOff = editor.document.offsetAt(at) + text.length;
-  await editor.edit((eb) => eb.insert(at, text), { undoStopBefore: false, undoStopAfter: false });
-  const end = editor.document.positionAt(endOff);
-  editor.selection = new vscode.Selection(end, end);
 }
 
 /** `f`/`F`/`t`/`T` — begin a find; the next key supplies the target char.
@@ -886,13 +865,6 @@ async function replaceChars(editor: vscode.TextEditor, char: string, count: numb
  * keybinding passes the character string). */
 export async function provideChar(char?: unknown): Promise<void> {
   const editor = activeEditor();
-  // Insert-mode Ctrl-R{reg} shares this await-a-char layer.
-  if (editor && pendingInsertRegister && typeof char === 'string' && char.length > 0) {
-    pendingInsertRegister = false;
-    setAwaiting(false);
-    await insertRegister(editor, char);
-    return;
-  }
   // Surround (ds/cs/ys/S) shares this await-a-char layer — dispatch to it first.
   if (editor && surroundWantsChar() && typeof char === 'string' && char.length > 0) {
     await provideSurroundChar(editor, char);

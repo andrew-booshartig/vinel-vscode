@@ -10,7 +10,9 @@ dot-repeat, find-char, counts — built as a **native state machine** on top of
 VS Code, not a Vim emulation and not a Neovim bridge.
 
 - **Normal mode** does what Vim would do; **Insert mode** does what VS Code
-  would do (typing is 100% native — ViNEL never touches it).
+  would do (typing is 100% native — ViNEL never touches it). By design, Insert
+  mode stays plain VS Code: Vim's insert-mode shortcuts (like `Ctrl-R`) are
+  deliberately left out so Insert feels exactly like the editor you know.
 - Every command routes straight to VS Code's **own** commands (cursor moves,
   edits, undo, find). No `type`-command hijacking, no shadow undo tree — the
   two things that make other Vim extensions lag on big files and mangle undo.
@@ -84,7 +86,6 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `"{a-z}` + op | Use a named register (`"ayy` yanks to `a`, `"ap` pastes from it) |
 | `"{A-Z}` + op | Append to a register (`"Ayy`) |
 | `"_` + op | Black-hole register (delete without clobbering the yank) |
-| `Ctrl-R{reg}` (in Insert) | Paste a register's text while typing (`Ctrl-R"`, `Ctrl-Ra`) |
 
 ### Macros
 | Key | Action |

@@ -479,10 +479,6 @@
         "title": "ViNEL: Toggle case over motion (g~)"
       },
       {
-        "command": "vinel.insertRegister",
-        "title": "ViNEL: Insert register (Insert Ctrl-R)"
-      },
-      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3254,11 +3250,6 @@
         "command": "vinel.caseToggle",
         "key": "g shift+`",
         "when": "editorTextFocus && vinel.mode == 'normal'"
-      },
-      {
-        "command": "vinel.insertRegister",
-        "key": "ctrl+r",
-        "when": "editorTextFocus && vinel.mode == 'insert'"
       }
     ]
   },
