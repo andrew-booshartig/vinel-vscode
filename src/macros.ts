@@ -151,6 +151,19 @@ export async function recExec(commandId?: unknown): Promise<void> {
   if (typeof commandId === 'string') await vscode.commands.executeCommand(commandId);
 }
 
+/** Full teardown for extension deactivate / uninstall: stop any in-flight
+ * capture, remove the recording badge, and clear the recording context keys.
+ * ViNEL keeps macros only in memory (never on disk), so nothing else lingers. */
+export function disposeMacros(): void {
+  typeRecorder?.dispose();
+  typeRecorder = undefined;
+  recIndicator?.dispose();
+  recIndicator = undefined;
+  recording = null;
+  vscode.commands.executeCommand('setContext', 'vinel.recordingMacro', false);
+  vscode.commands.executeCommand('setContext', 'vinel.awaitingMacro', false);
+}
+
 /** Escape — drop a half-typed q/@. (Does NOT stop an in-progress recording.) */
 export function cancelPendingMacro(): void {
   pending = null;

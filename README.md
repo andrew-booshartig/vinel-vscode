@@ -244,13 +244,17 @@ as Paste on Windows/Linux), `vinel.exCommand` (`:`), `vinel.repeatChange` (`.`).
 
 ## Leader & custom mappings
 
-ViNEL doesn't invent its own mapping language — you script leader commands with
-**native VS Code chord keybindings**, gated to Normal mode. `Space` is the
-conventional leader and ViNEL leaves it free (bare `Space` in Normal does
-nothing), but any key works.
+A **leader mapping** is simple: press a *leader* key, then a short letter
+sequence, to run any command — e.g. `Space` then `f` opens the file picker.
+It's how Neovim users bind their most-used actions. ViNEL doesn't invent a
+mapping language for this; you use **native VS Code chord keybindings** gated to
+Normal mode, so they sync with the Keyboard Shortcuts UI like everything else.
+`Space` is the conventional leader and ViNEL keeps it free (bare `Space` in
+Normal does nothing), but any first key works.
 
-Command Palette → *Preferences: Open Keyboard Shortcuts (JSON)*, then add chords
-whose `when` is `vinel.mode == 'normal'`:
+Command Palette (`Cmd/Ctrl+Shift+P`) → *Preferences: Open Keyboard Shortcuts
+(JSON)*. Each entry reads as: `"key"` = your leader sequence · `"command"` = what
+to run · `"when"` = `vinel.mode == 'normal'` (so it only fires in Normal):
 
 ```jsonc
 [
@@ -263,11 +267,23 @@ whose `when` is `vinel.mode == 'normal'`:
 ]
 ```
 
-- **Change your leader** by swapping the first key (`,`, `\`, …).
+### Finding the command to bind
+Every action in VS Code has a **command id** — the string you put in
+`"command"`. To find one:
+
+1. Open **Keyboard Shortcuts** (`Cmd/Ctrl+K Cmd/Ctrl+S`).
+2. Search in plain words — *"save"*, *"find files"*, *"toggle terminal"*,
+   *"format document"*, or *"ViNEL"* for ViNEL's own.
+3. **Right-click the matching row → Copy Command ID** and paste it as `"command"`.
+
+That's the whole trick — anything you can find in Keyboard Shortcuts, you can put
+behind a leader key: built-in commands, other extensions' commands, or ViNEL's
+(`vinel.macroPlayLast`, `vinel.exCommand`, …).
+
+- **Change your leader** by swapping the first key (`,`, `\`, …) in each entry.
 - **Sequences** are just multi-key chords — `space g g`, pressed in order.
 - Your `keybindings.json` outranks ViNEL's defaults, so these take over `Space`
-  in Normal automatically. The same works from the Keyboard Shortcuts UI (they're
-  one synced store — see [Customizing keybindings](#customizing-keybindings)).
+  in Normal automatically (see [Customizing keybindings](#customizing-keybindings)).
 
 ## Design note: text objects seek forward (across lines)
 
@@ -299,6 +315,15 @@ npm run compile
 npm run package                    # produces a .vsix
 code --install-extension vinel-0.0.1.vsix --force
 ```
+
+## Uninstalling & resetting
+
+Uninstalling removes ViNEL and all of its commands and default keybindings
+automatically. It contributes **no settings** and writes nothing to disk, so a
+reinstall always starts clean — handy if anything ever gets into a weird state.
+Your own `keybindings.json` (leader mappings, custom binds) is *your* file and is
+left untouched; keep a copy (or track your VS Code config in git) so you can
+restore it after a reinstall.
 
 ## Not built yet
 

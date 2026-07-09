@@ -429,5 +429,22 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {
-  // nothing to clean up
+  // VS Code removes the extension's code, commands, and contributed keybindings
+  // automatically on uninstall, and ViNEL persists NO settings or state (no
+  // `contributes.configuration`, nothing written to disk / globalState) — so a
+  // reinstall always starts clean. This just tidies transient UI + context keys
+  // in case the extension is disabled without a reload. The user's OWN
+  // keybindings.json (their leader mappings) is their file and is left untouched.
+  macros.disposeMacros();
+  for (const key of [
+    'vinel.mode', 'vinel.awaitingChar', 'vinel.awaitingTextObject',
+    'vinel.awaitingMark', 'vinel.awaitingRegister', 'vinel.awaitingMacro',
+    'vinel.recordingMacro',
+  ]) {
+    vscode.commands.executeCommand('setContext', key, undefined);
+  }
+  // Best-effort: restore a normal line cursor in open editors.
+  for (const editor of vscode.window.visibleTextEditors) {
+    editor.options = { ...editor.options, cursorStyle: vscode.TextEditorCursorStyle.Line };
+  }
 }
