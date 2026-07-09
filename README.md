@@ -83,7 +83,13 @@ Opens VS Code's input box; Enter runs, Escape cancels.
 | `:%s/pat/rep/g` | Substitute across the whole file |
 | `:10,20s/…` | Substitute over a line range |
 | `:'<,'>s/…` | Substitute over the Visual selection (`:` from Visual prefills this) |
+| `:[range]d` `:[range]y` | Delete / yank a line range (`:15,20y`, `:%d`) |
+| `:[range]>` `:[range]<` | Indent / outdent a line range |
+| `:[range]j` | Join a line range |
 | `:noh` | Clear the search highlight |
+
+Ranges: `%` (whole file), `n,m`, `.` (current), `$` (last), `'<,'>` (Visual
+selection); no range = current line.
 
 Substitution patterns are JavaScript `RegExp` (not full vim regex) — literals,
 `\d`, groups, `\1` backrefs, `&` = whole match all work; `\v`/`\zs`/`\<` do

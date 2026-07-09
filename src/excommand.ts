@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Mode, isVisual, setMode } from './state';
+import { setRegister } from './registers';
 
 /**
  * Ex-commands (`:`) — the command line.
@@ -110,13 +111,72 @@ async function parseAndRun(editor: vscode.TextEditor, cmd: string, selRange: [nu
     case 'noh': case 'nohlsearch': await run('closeFindWidget'); return;
   }
 
-  if (/^\d+$/.test(cmd)) { gotoLine(editor, parseInt(cmd, 10)); return; }
-  if (cmd === '$') { gotoLine(editor, editor.document.lineCount); return; }
-
+  // Substitute parses its own range (`:%s/…`, `:10,20s/…`).
   const sub = parseSubstitute(cmd);
   if (sub) { await runSubstitute(editor, sub, selRange); return; }
 
+  // Otherwise: a leading [range] followed by an optional line command. The
+  // Visual marker `'<,'>` is matched literally (so a trailing `>`/`<` command
+  // isn't swallowed into the range); every other range is digits/%/./$/`,`.
+  let range: string;
+  let rest: string;
+  if (cmd.startsWith("'<,'>")) { range = "'<,'>"; rest = cmd.slice(5).trim(); }
+  else { const m = /^([\d%.$,]*)(.*)$/.exec(cmd)!; range = m[1]; rest = m[2].trim(); }
+  const [start, end] = resolveRange(editor, range, selRange);
+
+  if (rest === '') { gotoLine(editor, end + 1); return; }          // `:15` / `:15,20` → line
+  if (/^d(el(ete)?)?$/.test(rest)) { await deleteLines(editor, start, end); return; }
+  if (/^y(ank)?$/.test(rest)) { yankLines(editor, start, end); return; }
+  if (/^>+$/.test(rest)) { await indentRange(editor, start, end, 'editor.action.indentLines'); return; }
+  if (/^<+$/.test(rest)) { await indentRange(editor, start, end, 'editor.action.outdentLines'); return; }
+  if (/^j(oin)?$/.test(rest)) { await joinRange(editor, start, end); return; }
+
   vscode.window.setStatusBarMessage(`ViNEL: not an editor command: ${cmd}`, 3000);
+}
+
+// ── Range line commands: :d :y :> :< :j ─────────────────────────────────────
+
+/** Full-line span [start..end] as a Range, plus whether it's the last line
+ * (no trailing newline to include). */
+function lineSpan(editor: vscode.TextEditor, start: number, end: number): { range: vscode.Range; text: string } {
+  const doc = editor.document;
+  const isLast = end === doc.lineCount - 1;
+  const beg = new vscode.Position(start, 0);
+  const finish = isLast ? doc.lineAt(end).range.end : new vscode.Position(end + 1, 0);
+  let text = doc.getText(new vscode.Range(beg, finish));
+  if (isLast && !text.endsWith('\n')) text += '\n'; // linewise register convention
+  return { range: new vscode.Range(beg, finish), text };
+}
+
+function yankLines(editor: vscode.TextEditor, start: number, end: number): void {
+  setRegister(lineSpan(editor, start, end).text, true);
+  const pos = new vscode.Position(start, 0);
+  editor.selection = new vscode.Selection(pos, pos);
+}
+
+async function deleteLines(editor: vscode.TextEditor, start: number, end: number): Promise<void> {
+  const doc = editor.document;
+  const { text } = lineSpan(editor, start, end);
+  setRegister(text, true);
+  const isLast = end === doc.lineCount - 1;
+  // On the true last line consume the PRECEDING newline so no blank line lingers.
+  const delBeg = isLast && start > 0 ? doc.lineAt(start - 1).range.end : new vscode.Position(start, 0);
+  const delEnd = isLast ? doc.lineAt(end).range.end : new vscode.Position(end + 1, 0);
+  await editor.edit((eb) => eb.delete(new vscode.Range(delBeg, delEnd)));
+  const landing = Math.min(start, editor.document.lineCount - 1);
+  editor.selection = new vscode.Selection(new vscode.Position(landing, 0), new vscode.Position(landing, 0));
+}
+
+async function indentRange(editor: vscode.TextEditor, start: number, end: number, command: string): Promise<void> {
+  editor.selection = new vscode.Selection(new vscode.Position(start, 0), new vscode.Position(end, 0));
+  await vscode.commands.executeCommand(command);
+  const pos = new vscode.Position(start, 0);
+  editor.selection = new vscode.Selection(pos, pos);
+}
+
+async function joinRange(editor: vscode.TextEditor, start: number, end: number): Promise<void> {
+  editor.selection = new vscode.Selection(new vscode.Position(start, 0), new vscode.Position(Math.max(start, end), 0));
+  await vscode.commands.executeCommand('editor.action.joinLines');
 }
 
 function gotoLine(editor: vscode.TextEditor, oneBased: number): void {
