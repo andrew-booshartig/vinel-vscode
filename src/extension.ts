@@ -216,11 +216,13 @@ function suppressKey(): void {
 /** `0` — real vim: a motion (column 0) unless a count is already being
  * typed, in which case it extends the count (so `50` means fifty, not
  * "five, then column 0"). See state.ts / motions.ts for the full rationale. */
+// `0` is operator-aware too (`d0` deletes to column 0), via the same wrapper.
+const lineStartMotion = operators.operatorMotion(motions.lineStart, 'exclusive');
 function digitZero(): void {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
   if (zeroIsMotion()) {
-    motions.lineStart();
+    lineStartMotion();
   } else {
     appendDigit(editor, '0');
   }
@@ -292,22 +294,22 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.digit8', digit('8')],
     ['vinel.digit9', digit('9')],
 
-    ['vinel.moveLeft', motions.moveLeft],
-    ['vinel.moveRight', motions.moveRight],
-    ['vinel.moveUp', motions.moveUp],
-    ['vinel.moveDown', motions.moveDown],
+    ['vinel.moveLeft', operators.operatorMotion(motions.moveLeft, 'exclusive')],
+    ['vinel.moveRight', operators.operatorMotion(motions.moveRight, 'exclusive')],
+    ['vinel.moveUp', operators.operatorMotion(motions.moveUp, 'linewise')],
+    ['vinel.moveDown', operators.operatorMotion(motions.moveDown, 'linewise')],
     // w/b/e double as operator targets (dw/cw/yw) — see operators.ts's note on
     // why these route through operatorAwareWordMotion instead of calling
     // motions.wordForward() etc. directly (count-multiplication semantics).
     ['vinel.wordForward', operators.operatorAwareWordMotion('cursorWordStartRight')],
     ['vinel.wordBackward', operators.operatorAwareWordMotion('cursorWordStartLeft')],
     ['vinel.wordEnd', operators.operatorAwareWordMotion('cursorWordEndRight')],
-    ['vinel.firstNonBlank', motions.firstNonBlank],
-    ['vinel.lineEnd', motions.lineEnd],
-    ['vinel.bufferTop', motions.bufferTop],
-    ['vinel.bufferBottom', motions.bufferBottom],
-    ['vinel.paragraphBackward', motions.paragraphBackward],
-    ['vinel.paragraphForward', motions.paragraphForward],
+    ['vinel.firstNonBlank', operators.operatorMotion(motions.firstNonBlank, 'exclusive')],
+    ['vinel.lineEnd', operators.operatorMotion(motions.lineEnd, 'exclusive')],
+    ['vinel.bufferTop', operators.operatorMotion(motions.bufferTop, 'linewise')],
+    ['vinel.bufferBottom', operators.operatorMotion(motions.bufferBottom, 'linewise')],
+    ['vinel.paragraphBackward', operators.operatorMotion(motions.paragraphBackward, 'exclusive')],
+    ['vinel.paragraphForward', operators.operatorMotion(motions.paragraphForward, 'exclusive')],
     ['vinel.search', motions.search],
 
     ['vinel.opDelete', operators.operatorKey('delete')],
@@ -389,17 +391,17 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.outdentLines', operators.outdentLines],
 
     // Additional motions
-    ['vinel.wordForwardBig', motions.wordForwardBig],
-    ['vinel.wordBackwardBig', motions.wordBackwardBig],
-    ['vinel.wordEndBig', motions.wordEndBig],
-    ['vinel.matchBracket', motions.matchBracket],
-    ['vinel.lineUp', motions.lineUp],
-    ['vinel.lineDown', motions.lineDown],
-    ['vinel.lineFirstNonBlank', motions.lineFirstNonBlank],
-    ['vinel.lineLastNonBlank', motions.lineLastNonBlank],
-    ['vinel.screenTop', motions.screenTop],
-    ['vinel.screenMiddle', motions.screenMiddle],
-    ['vinel.screenBottom', motions.screenBottom],
+    ['vinel.wordForwardBig', operators.operatorMotion(motions.wordForwardBig, 'exclusive')],
+    ['vinel.wordBackwardBig', operators.operatorMotion(motions.wordBackwardBig, 'exclusive')],
+    ['vinel.wordEndBig', operators.operatorMotion(motions.wordEndBig, 'inclusive')],
+    ['vinel.matchBracket', operators.operatorMotion(motions.matchBracket, 'inclusive')],
+    ['vinel.lineUp', operators.operatorMotion(motions.lineUp, 'linewise')],
+    ['vinel.lineDown', operators.operatorMotion(motions.lineDown, 'linewise')],
+    ['vinel.lineFirstNonBlank', operators.operatorMotion(motions.lineFirstNonBlank, 'linewise')],
+    ['vinel.lineLastNonBlank', operators.operatorMotion(motions.lineLastNonBlank, 'inclusive')],
+    ['vinel.screenTop', operators.operatorMotion(motions.screenTop, 'linewise')],
+    ['vinel.screenMiddle', operators.operatorMotion(motions.screenMiddle, 'linewise')],
+    ['vinel.screenBottom', operators.operatorMotion(motions.screenBottom, 'linewise')],
 
     // Search & scroll
     ['vinel.searchNext', motions.searchNext],

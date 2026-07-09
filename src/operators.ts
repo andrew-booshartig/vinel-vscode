@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingOperatorLabel } from './state';
+import { Mode, afterMotion, consumeCount, getMode, isVisual, setActive, setMode, setPendingCount, setPendingOperatorLabel } from './state';
 import { setRegister, getRegister, setPendingRegister, clearPendingRegister } from './registers';
 import { textObjectRange, type TextObjectId } from './textobjects';
 import { beginInsertChange, recordChange } from './dotrepeat';
@@ -144,6 +144,66 @@ async function applyWordMotionOp(editor: vscode.TextEditor, op: OperatorKind, ti
   }
   const end = editor.selection.active;
   await applyCharwiseRange(editor, op, start, end);
+}
+
+/**
+ * Make ANY normal-mode cursor motion double as an operator target (`dG`, `dj`,
+ * `y}`, `c$`, `d%`, …). With no operator pending it just runs the motion; with
+ * one pending it captures the start, runs the motion to find the target, and
+ * applies the operator over the span:
+ *   • `linewise`  — whole lines start.line…target.line (dj, dk, dG, dgg, dH…)
+ *   • `exclusive` — charwise [start, target)            (dh, dl, d0, d^, d})
+ *   • `inclusive` — charwise incl. the target char       (d%, dg_)
+ * Counts multiply (`2d3j`) via the combined count preloaded before the motion.
+ */
+export type MotionKind = 'linewise' | 'exclusive' | 'inclusive';
+
+export function operatorMotion(move: () => void | Promise<void>, kind: MotionKind) {
+  return async (): Promise<void> => {
+    const editor = activeEditor();
+    if (!editor) return;
+    if (!hasPendingOperator()) { await move(); return; }
+
+    const op = pendingOperator!;
+    const opCount = operatorCount; // capture before cancel resets it to 1
+    cancelPendingOperator();
+    const combined = opCount * consumeCount(editor);
+    const run = async (): Promise<void> => {
+      const e = activeEditor();
+      if (!e) return;
+      const start = e.selection.active;
+      setPendingCount(combined);
+      await move();
+      await applyMotionOp(e, op, start, e.selection.active, kind);
+    };
+    await run();
+    recordOp(op, run);
+  };
+}
+
+async function applyMotionOp(
+  editor: vscode.TextEditor,
+  op: OperatorKind,
+  start: vscode.Position,
+  target: vscode.Position,
+  kind: MotionKind,
+): Promise<void> {
+  if (kind === 'linewise') {
+    await applyLinewiseRange(editor, op, start.line, target.line);
+    return;
+  }
+  // Charwise: a motion that didn't move is a no-op (d% off a bracket, d0 at
+  // column 0), so it can't nuke the character under the cursor.
+  if (target.isEqual(start)) return;
+  let a = start;
+  let b = target;
+  if (kind === 'inclusive') {
+    const hi = a.isBeforeOrEqual(b) ? b : a;
+    const len = editor.document.lineAt(hi.line).text.length;
+    const hi2 = new vscode.Position(hi.line, Math.min(hi.character + 1, len));
+    if (a.isBeforeOrEqual(b)) b = hi2; else a = hi2;
+  }
+  await applyCharwiseRange(editor, op, a, b);
 }
 
 /** Apply OP to the charwise range between A and B (order-independent). */
