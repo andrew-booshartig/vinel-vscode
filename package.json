@@ -406,6 +406,26 @@
       {
         "command": "vinel.provideRegister",
         "title": "ViNEL: (internal) supply register"
+      },
+      {
+        "command": "vinel.enterReplace",
+        "title": "ViNEL: Enter REPLACE mode (R)"
+      },
+      {
+        "command": "vinel.replaceBackspace",
+        "title": "ViNEL: (internal) Replace-mode backspace"
+      },
+      {
+        "command": "vinel.macroRecord",
+        "title": "ViNEL: Record macro (q)"
+      },
+      {
+        "command": "vinel.macroReplay",
+        "title": "ViNEL: Replay macro (@)"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "title": "ViNEL: (internal) supply macro slot"
       }
     ],
     "keybindings": [
@@ -441,497 +461,517 @@
       {
         "command": "vinel.suppressKey",
         "key": "0",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "1",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "2",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "3",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "4",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "5",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "6",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "7",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "8",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "9",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "a",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+a",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "b",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+b",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "c",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+c",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "d",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+d",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "e",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+e",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "f",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+f",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+g",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "h",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+h",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "i",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+i",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "j",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+j",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "k",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+k",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "l",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+l",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "m",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+m",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "n",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+n",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "o",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+o",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "p",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+p",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "q",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+q",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "r",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+r",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "s",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+s",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "t",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+t",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "u",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+u",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "v",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+v",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "w",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+w",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "x",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+x",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "y",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+y",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+z",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+0",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+1",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+2",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+3",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+4",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+5",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+6",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+7",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+8",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+9",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "`",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+`",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "-",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+-",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "=",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+=",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "[",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+[",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "]",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+]",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "\\",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+\\",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": ";",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+;",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "'",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+'",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": ",",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": ".",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "/",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "shift+/",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "space",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "enter",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "backspace",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.suppressKey",
         "key": "delete",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
+      },
+      {
+        "command": "vinel.enterReplace",
+        "key": "shift+r",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.macroRecord",
+        "key": "q",
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
+      },
+      {
+        "command": "vinel.macroReplay",
+        "key": "shift+2",
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
+      },
+      {
+        "command": "vinel.replaceBackspace",
+        "key": "backspace",
+        "when": "editorTextFocus && vinel.mode == 'replace'"
       },
       {
         "command": "vinel.setMark",
         "key": "m",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.jumpMarkExact",
         "key": "`",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.jumpMarkLine",
         "key": "'",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.registerPrefix",
         "key": "shift+'",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.exCommand",
         "key": "shift+;",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.repeatChange",
@@ -946,12 +986,12 @@
       {
         "command": "vinel.iKey",
         "key": "i",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.aKey",
         "key": "a",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.appendEol",
@@ -981,292 +1021,292 @@
       {
         "command": "vinel.enterVisual",
         "key": "v",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.enterVisualLine",
         "key": "shift+v",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit0",
         "key": "0",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit1",
         "key": "1",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit2",
         "key": "2",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit3",
         "key": "3",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit4",
         "key": "4",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit5",
         "key": "5",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit6",
         "key": "6",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit7",
         "key": "7",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit8",
         "key": "8",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.digit9",
         "key": "9",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveLeft",
         "key": "h",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveLeft",
         "key": "left",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveDown",
         "key": "j",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveDown",
         "key": "down",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveUp",
         "key": "k",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveUp",
         "key": "up",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveRight",
         "key": "l",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.moveRight",
         "key": "right",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.wordForward",
         "key": "w",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.wordBackward",
         "key": "b",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.wordEnd",
         "key": "e",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.wordForwardBig",
         "key": "shift+w",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.wordBackwardBig",
         "key": "shift+b",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.wordEndBig",
         "key": "shift+e",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.firstNonBlank",
         "key": "shift+6",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.lineEnd",
         "key": "shift+4",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.matchBracket",
         "key": "shift+5",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.bufferTop",
         "key": "g g",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.bufferBottom",
         "key": "shift+g",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.paragraphBackward",
         "key": "shift+[",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.paragraphForward",
         "key": "shift+]",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.lineUp",
         "key": "-",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.lineDown",
         "key": "shift+=",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.lineFirstNonBlank",
         "key": "shift+-",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.lineLastNonBlank",
         "key": "g shift+-",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.screenTop",
         "key": "shift+h",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.screenMiddle",
         "key": "shift+m",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.screenBottom",
         "key": "shift+l",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.search",
         "key": "/",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.searchNext",
         "key": "n",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.searchPrev",
         "key": "shift+n",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.starSearch",
         "key": "shift+8",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.hashSearch",
         "key": "shift+3",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.halfPageDown",
         "key": "ctrl+d",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.halfPageUp",
         "key": "ctrl+u",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.pageDown",
         "key": "ctrl+f",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.pageUp",
         "key": "ctrl+b",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.scrollCenter",
         "key": "z z",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.scrollTop",
         "key": "z t",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.scrollBottom",
         "key": "z b",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.findForward",
         "key": "f",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.findBackward",
         "key": "shift+f",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.tillForward",
         "key": "t",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.tillBackward",
         "key": "shift+t",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.repeatFind",
         "key": ";",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.repeatFindReverse",
         "key": ",",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.replaceChar",
@@ -1276,32 +1316,32 @@
       {
         "command": "vinel.opDelete",
         "key": "d",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.opChange",
         "key": "c",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.opYank",
         "key": "y",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.cutChar",
         "key": "x",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.pasteAfter",
         "key": "p",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.oKey",
         "key": "o",
-        "when": "editorTextFocus && vinel.mode != 'insert'"
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {
         "command": "vinel.deleteToEol",
@@ -2549,6 +2589,168 @@
         "key": "shift+-",
         "when": "editorTextFocus && vinel.awaitingRegister",
         "args": "_"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "a",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "a"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "b",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "b"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "c",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "c"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "d",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "d"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "e",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "e"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "f",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "f"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "g",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "g"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "h",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "h"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "i",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "i"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "j",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "j"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "k",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "k"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "l",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "l"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "m",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "m"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "n",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "n"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "o",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "o"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "p",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "p"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "q",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "q"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "r",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "r"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "s",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "s"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "t",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "t"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "u",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "u"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "v",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "v"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "w",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "w"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "x",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "x"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "y",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "y"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "z",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "z"
+      },
+      {
+        "command": "vinel.provideMacro",
+        "key": "shift+2",
+        "when": "editorTextFocus && vinel.awaitingMacro",
+        "args": "@"
       }
     ]
   },

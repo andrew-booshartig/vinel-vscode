@@ -9,6 +9,8 @@ import * as operators from './operators';
 import * as dotrepeat from './dotrepeat';
 import * as excommand from './excommand';
 import * as marks from './marks';
+import * as replace from './replace';
+import * as macros from './macros';
 
 /**
  * ViNEL — a native modal-editing state machine for VSCode. Not an
@@ -40,11 +42,13 @@ function enterNormal(): void {
   if (!editor) return;
   // Leaving Insert → finalize the dot-repeat change (captures the typed text).
   if (getMode(editor) === Mode.Insert) dotrepeat.finishInsertChange(editor);
+  if (getMode(editor) === Mode.Replace) replace.exitReplace(); // drop the scoped type handler
   operators.cancelPendingOperator();   // Escape cancels a half-typed d/c/y, like vim
   operators.cancelPendingChar();       // …and a half-typed f/t/r
   operators.cancelPendingTextObject(); // …and a half-typed i/a text object
   operators.cancelPendingRegister();   // …and a dangling " register prefix
   marks.cancelPendingMark();           // …and a half-typed m/`/'
+  macros.cancelPendingMacro();         // …and a half-typed q/@
   // Leaving visual: collapse the selection back to a caret (vim's Escape).
   if (isVisual(editor)) {
     const pos = editor.selection.active;
@@ -312,6 +316,13 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.registerPrefix', operators.registerPrefix],
     ['vinel.provideRegister', operators.provideRegister],
 
+    // Replace mode + macros
+    ['vinel.enterReplace', replace.enterReplace],
+    ['vinel.replaceBackspace', replace.backspaceReplace],
+    ['vinel.macroRecord', macros.macroRecordKey],
+    ['vinel.macroReplay', macros.macroReplayKey],
+    ['vinel.provideMacro', macros.provideMacro],
+
     // Visual-mode operators
     ['vinel.visualDelete', operators.visualDelete],
     ['vinel.visualIndent', operators.visualIndent],
@@ -375,8 +386,20 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.provideChar', operators.provideChar],
   ];
 
+  // Macro recorder: every command logs itself (after it runs) while a macro is
+  // recording — our commands ARE the vim actions. Off the record path it's one
+  // cheap branch, so there's no overhead when not recording. Excludes the
+  // macro controls themselves and the no-op suppressor.
+  const MACRO_EXCLUDE = new Set([
+    'vinel.macroRecord', 'vinel.macroReplay', 'vinel.provideMacro', 'vinel.suppressKey',
+  ]);
   for (const [id, handler] of commands) {
-    context.subscriptions.push(vscode.commands.registerCommand(id, handler));
+    const recorded = async (...args: unknown[]): Promise<unknown> => {
+      const result = await handler(...args);
+      if (!MACRO_EXCLUDE.has(id)) macros.recordCommand(id, args);
+      return result;
+    };
+    context.subscriptions.push(vscode.commands.registerCommand(id, recorded));
   }
 }
 

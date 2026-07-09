@@ -29,6 +29,7 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `I` / `A` | Insert at first non-blank / end of line |
 | `o` / `O` | Open a line below / above and insert |
 | `v` / `V` | Charwise / linewise Visual mode (press again or `Esc` to exit) |
+| `R` | Replace (overtype) mode — typing overwrites; Backspace restores |
 
 ### Motions (Normal & Visual)
 | Key | Action |
@@ -79,6 +80,19 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `"{a-z}` + op | Use a named register (`"ayy` yanks to `a`, `"ap` pastes from it) |
 | `"{A-Z}` + op | Append to a register (`"Ayy`) |
 | `"_` + op | Black-hole register (delete without clobbering the yank) |
+
+### Macros
+| Key | Action |
+|-----|--------|
+| `q{a-z}` … `q` | Record a macro into a slot, stop with `q` |
+| `@{a-z}` | Replay the macro (`{count}@a` replays N times) |
+| `@@` | Replay the last macro |
+
+Macros are recorded as ViNEL's own command sequence (plus text typed in
+Insert) — there's no always-on `type` hijack, so no dependency on a second
+extension. The one place ViNEL touches `type` is Replace mode, and only while
+`R` is active (the handler is disposed the instant you leave it) — Insert-mode
+typing is always 100% native.
 
 ### Ex-commands (`:`)
 Opens VS Code's input box; Enter runs, Escape cancels.

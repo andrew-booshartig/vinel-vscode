@@ -24,6 +24,7 @@ export enum Mode {
   Insert,
   Visual,
   VisualLine,
+  Replace,
 }
 
 const modeByDocument = new Map<string, Mode>();
@@ -122,6 +123,7 @@ const CONTEXT_VALUE: Record<Mode, string> = {
   [Mode.Insert]: 'insert',
   [Mode.Visual]: 'visual',
   [Mode.VisualLine]: 'visual-line',
+  [Mode.Replace]: 'replace',
 };
 
 const STATUS_LABEL: Record<Mode, string> = {
@@ -129,6 +131,7 @@ const STATUS_LABEL: Record<Mode, string> = {
   [Mode.Insert]: '☯ INSERT',
   [Mode.Visual]: '☯ VISUAL',
   [Mode.VisualLine]: '☯ V-LINE',
+  [Mode.Replace]: '☯ REPLACE',
 };
 
 function applyToEditor(editor: vscode.TextEditor): void {
@@ -136,15 +139,16 @@ function applyToEditor(editor: vscode.TextEditor): void {
 
   vscode.commands.executeCommand('setContext', 'vinel.mode', CONTEXT_VALUE[mode]);
 
-  // Line cursor only while typing (Insert); block everywhere else, including
-  // both visual sub-modes — matching vim, which keeps the block cursor in
-  // visual. Cursor COLOR is a known future addition (needs a global
-  // colorCustomizations write); shape is the per-editor-safe signal for now.
+  // Line cursor while typing (Insert); underline in Replace (vim's overtype
+  // cue); block everywhere else. Cursor COLOR is a known future addition;
+  // shape is the per-editor-safe signal for now.
   editor.options = {
     ...editor.options,
     cursorStyle: mode === Mode.Insert
       ? vscode.TextEditorCursorStyle.Line
-      : vscode.TextEditorCursorStyle.Block,
+      : mode === Mode.Replace
+        ? vscode.TextEditorCursorStyle.Underline
+        : vscode.TextEditorCursorStyle.Block,
   };
 
   renderStatusBar(mode);

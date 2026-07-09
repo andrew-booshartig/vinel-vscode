@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Mode, setMode } from './state';
+import { recordInsert } from './macros';
 
 /**
  * Dot-repeat (`.`) — replay the last change.
@@ -55,6 +56,7 @@ export function finishInsertChange(editor: vscode.TextEditor): void {
   const { replayPrefix, start } = insertSession;
   insertSession = null;
   const text = editor.document.getText(new vscode.Range(start, editor.selection.active));
+  recordInsert(text); // if a macro is recording, capture the typed text as an event
   lastChange = async () => {
     await replayPrefix(); // reproduces the edit + position, ends in Insert
     const ed = vscode.window.activeTextEditor;
