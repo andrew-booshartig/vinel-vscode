@@ -192,6 +192,26 @@ Use `a` instead of `i` for the "around" (delimiters-included) form: `ci"`,
 | `o` | Jump to the other end of the selection |
 | `i{obj}` `a{obj}` | Select a text object |
 
+### Editor & IDE (VS Code's own power, under Vim keys)
+These route straight to VS Code's built-in commands, so you get full IDE
+features with Vim muscle memory. All are ordinary keybindings you can change —
+see [Customizing keybindings](#customizing-keybindings).
+
+| Key | Action |
+|-----|--------|
+| `Ctrl-O` / `Ctrl-I` | Jump back / forward through navigation history |
+| `gd` / `gD` | Go to definition / declaration |
+| `gr` | Peek references |
+| `K` | Show hover docs |
+| `gcc` / `gc` (Visual) | Toggle line comment (current line / selection) |
+| `gt` / `gT` | Next / previous editor |
+| `Ctrl-W h` `j` `k` `l` | Focus the split left / down / up / right |
+| `Ctrl-W s` / `Ctrl-W v` | Split down / right |
+| `Ctrl-W q` / `Ctrl-W w` | Close / cycle split |
+| `za` `zo` `zc` | Toggle / open / close fold |
+| `zR` / `zM` | Open all / close all folds |
+| `==` | Re-indent the current line |
+
 ## Customizing keybindings
 
 **Every key here is rebindable — nothing is locked.** ViNEL contributes plain VS

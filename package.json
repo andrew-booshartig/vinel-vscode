@@ -447,6 +447,10 @@
         "title": "ViNEL: (internal) run + record a built-in key while recording"
       },
       {
+        "command": "vinel.cmd",
+        "title": "ViNEL: (internal) run a VS Code command from a Vim key"
+      },
+      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3031,6 +3035,150 @@
         "key": "enter",
         "args": { "text": "\n" },
         "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace') && !suggestWidgetVisible && !inSnippetMode"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+o",
+        "args": "workbench.action.navigateBack",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+i",
+        "args": "workbench.action.navigateForward",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g d",
+        "args": "editor.action.revealDefinition",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g shift+d",
+        "args": "editor.action.revealDeclaration",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g r",
+        "args": "editor.action.goToReferences",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "shift+k",
+        "args": "editor.action.showHover",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g c c",
+        "args": "editor.action.commentLine",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g c",
+        "args": "editor.action.commentLine",
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "z a",
+        "args": "editor.toggleFold",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "z o",
+        "args": "editor.unfold",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "z c",
+        "args": "editor.fold",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "z shift+r",
+        "args": "editor.unfoldAll",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "z shift+m",
+        "args": "editor.foldAll",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g t",
+        "args": "workbench.action.nextEditor",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "g shift+t",
+        "args": "workbench.action.previousEditor",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w h",
+        "args": "workbench.action.focusLeftGroup",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w j",
+        "args": "workbench.action.focusBelowGroup",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w k",
+        "args": "workbench.action.focusAboveGroup",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w l",
+        "args": "workbench.action.focusRightGroup",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w s",
+        "args": "workbench.action.splitEditorDown",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w v",
+        "args": "workbench.action.splitEditor",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w q",
+        "args": "workbench.action.closeActiveEditor",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "ctrl+w w",
+        "args": "workbench.action.focusNextGroup",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.cmd",
+        "key": "= =",
+        "args": "editor.action.reindentselectedlines",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       }
     ]
   },

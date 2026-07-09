@@ -246,6 +246,17 @@ function redo(): void {
   vscode.commands.executeCommand('redo');
 }
 
+/** Run a VS Code command by id from a ViNEL key, draining any pending count
+ * first so it can't leak into the next command. This is the bridge for the
+ * "Vim key → native VS Code feature" bindings (jump list, go-to-definition,
+ * folding, window/tab nav, comment toggle, re-indent) — no reimplementation,
+ * just VS Code's own commands under Vim muscle memory. */
+async function runCommand(commandId?: unknown): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) consumeCount(editor);
+  if (typeof commandId === 'string') await vscode.commands.executeCommand(commandId);
+}
+
 /** `.` — repeat the last change. `N.` overrides the recorded count. */
 function repeat(): void | Thenable<void> {
   const editor = vscode.window.activeTextEditor;
@@ -332,6 +343,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.macroRecordToggle', macros.macroRecordToggle],
     ['vinel.macroPlayLast', macros.macroPlayLast],
     ['vinel.recExec', macros.recExec],
+    ['vinel.cmd', runCommand],
 
     // Blockwise Visual (Ctrl-V)
     ['vinel.enterVisualBlock', blockwise.enterVisualBlock],
