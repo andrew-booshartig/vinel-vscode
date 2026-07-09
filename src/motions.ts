@@ -212,11 +212,15 @@ export const wordEndBig = () => wordMotionBig('E');
 
 /** `%` — jump to the matching bracket (Visual extends the selection to it).
  * `{count}%` (go to N% of file) is uncommon and not implemented. */
-export function matchBracket(): void {
+export async function matchBracket(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
   consumeCount(editor);
-  vscode.commands.executeCommand(
+  // MUST await: the operator wrapper (operatorMotion) reads the cursor position
+  // right after this returns to compute the d%/c%/y% span. Without awaiting,
+  // the jump command hadn't moved the cursor yet, so the span looked like "no
+  // movement" and silently no-op'd — that was the d% bug.
+  await vscode.commands.executeCommand(
     isVisual(editor) ? 'editor.action.selectToBracket' : 'editor.action.jumpToBracket',
   );
 }
