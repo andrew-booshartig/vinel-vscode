@@ -41,6 +41,11 @@ export type OperatorKind = 'delete' | 'change' | 'yank';
 let pendingOperator: OperatorKind | null = null;
 let operatorCount = 1;
 
+// When set (only during a `ys` capture), the next operator range application is
+// diverted here instead of deleting/yanking — that's how `ys{motion}` reuses
+// every motion / text object to obtain its range. One-shot.
+let rangeInterceptor: ((editor: vscode.TextEditor, range: vscode.Range) => Promise<void>) | null = null;
+
 const LABEL: Record<OperatorKind, string> = { delete: 'd', change: 'c', yank: 'y' };
 
 export function hasPendingOperator(): boolean {
@@ -73,6 +78,7 @@ export function operatorKey(op: OperatorKind) {
   return async () => {
     const editor = activeEditor();
     if (!editor) return;
+    cancelPendingSurround(); // a fresh d/c/y voids any half-armed ys/ds/cs
 
     // In visual mode the operator applies immediately to the selection —
     // there's no motion to wait for.
@@ -216,6 +222,7 @@ export async function applyCharwiseRange(
   const beg = a.isBeforeOrEqual(b) ? a : b;
   const end = a.isBeforeOrEqual(b) ? b : a;
   const range = new vscode.Range(beg, end);
+  if (rangeInterceptor) { const it = rangeInterceptor; rangeInterceptor = null; await it(editor, range); return; }
   const text = editor.document.getText(range);
   setRegister(text, false);
 
@@ -244,6 +251,7 @@ async function applyLinewise(editor: vscode.TextEditor, op: OperatorKind, n: num
     ? doc.lineAt(endLine).range.end
     : new vscode.Position(endLine + 1, 0);
 
+  if (rangeInterceptor) { const it = rangeInterceptor; rangeInterceptor = null; await it(editor, new vscode.Range(beg, end)); return; }
   const fullRangeText = doc.getText(new vscode.Range(beg, end));
   setRegister(fullRangeText, true);
 
@@ -623,6 +631,8 @@ async function substituteCharCore(editor: vscode.TextEditor, n: number): Promise
 export async function substituteChar(): Promise<void> {
   const editor = activeEditor();
   if (!editor) return;
+  // `s` after a pending d/c/y (or a 2nd `s` after `ys`) is a surround command.
+  if (surroundFromSubstitute(editor)) return;
   const n = consumeCount(editor);
   await substituteCharCore(editor, n);
   beginInsertChange(editor, () => { const e = activeEditor(); return e ? substituteCharCore(e, n) : undefined; });
@@ -742,9 +752,10 @@ function setAwaiting(on: boolean): void {
   vscode.commands.executeCommand('setContext', 'vinel.awaitingChar', on);
 }
 
-/** Clear a half-typed f/F/t/T/r (Escape). */
+/** Clear a half-typed f/F/t/T/r or surround (Escape). */
 export function cancelPendingChar(): void {
   pendingChar = null;
+  cancelPendingSurround();
   setAwaiting(false);
 }
 
@@ -854,6 +865,11 @@ async function replaceChars(editor: vscode.TextEditor, char: string, count: numb
  * keybinding passes the character string). */
 export async function provideChar(char?: unknown): Promise<void> {
   const editor = activeEditor();
+  // Surround (ds/cs/ys/S) shares this await-a-char layer — dispatch to it first.
+  if (editor && surroundWantsChar() && typeof char === 'string' && char.length > 0) {
+    await provideSurroundChar(editor, char);
+    return;
+  }
   const pc = pendingChar;
   pendingChar = null;
   setAwaiting(false);
@@ -966,4 +982,152 @@ async function applyTextObjectOp(editor: vscode.TextEditor, op: OperatorKind, id
     await applyCharwiseRange(editor, op, result.range.start, result.range.end);
   }
   return true;
+}
+
+// ── Surround (ys / cs / ds, Visual S) ───────────────────────────────────────
+// vim-surround: add (`ys{motion}{c}`, `yss{c}`, Visual `S{c}`), delete
+// (`ds{c}`), change (`cs{old}{new}`). `s` pressed with a d/c/y operator pending
+// routes here; the char(s) arrive through the same awaiting-char layer as f/t/r.
+// `ys` reuses ANY motion / text object by diverting its range via
+// `rangeInterceptor` instead of yanking.
+
+const SURROUND_PAIR: Record<string, { open: string; close: string }> = {
+  ')': { open: '(', close: ')' }, '(': { open: '( ', close: ' )' }, b: { open: '(', close: ')' },
+  ']': { open: '[', close: ']' }, '[': { open: '[ ', close: ' ]' },
+  '}': { open: '{', close: '}' }, '{': { open: '{ ', close: ' }' }, B: { open: '{', close: '}' },
+  '>': { open: '<', close: '>' }, '<': { open: '< ', close: ' >' },
+  '"': { open: '"', close: '"' }, "'": { open: "'", close: "'" }, '`': { open: '`', close: '`' },
+};
+const SURROUND_OBJ: Record<string, TextObjectId> = {
+  ')': 'paren', '(': 'paren', b: 'paren',
+  ']': 'bracket', '[': 'bracket',
+  '}': 'brace', '{': 'brace', B: 'brace',
+  '>': 'angle', '<': 'angle',
+  '"': 'dquote', "'": 'squote', '`': 'backtick', t: 'tag',
+};
+
+type SurroundPending =
+  | { kind: 'ds' } | { kind: 'cs' } | { kind: 'cs2'; oldChar: string } | { kind: 'wrap' };
+let pendingSurround: SurroundPending | null = null;
+let surroundYsArmed = false; // `ys` seen; awaiting a motion (or a 2nd `s` = yss)
+let surroundRange: vscode.Range | null = null;
+
+/** True while a surround expects a character — so provideChar routes to us. */
+export function surroundWantsChar(): boolean {
+  return pendingSurround !== null;
+}
+
+export function cancelPendingSurround(): void {
+  pendingSurround = null;
+  surroundYsArmed = false;
+  surroundRange = null;
+  rangeInterceptor = null;
+}
+
+/** `s` in normal mode: with an operator pending it's a surround command
+ * (ds/cs/ys); otherwise the caller falls through to substitute. Returns true iff
+ * it consumed the key as a surround. */
+export function surroundFromSubstitute(editor: vscode.TextEditor): boolean {
+  if (surroundYsArmed) {
+    // second `s` → `yss`: surround the current line's content (first non-blank
+    // to end of line).
+    surroundYsArmed = false;
+    rangeInterceptor = null;
+    cancelPendingOperator();
+    const line = editor.selection.active.line;
+    const tl = editor.document.lineAt(line);
+    const start = new vscode.Position(line, tl.firstNonWhitespaceCharacterIndex);
+    surroundRange = new vscode.Range(start, tl.range.end);
+    pendingSurround = { kind: 'wrap' };
+    setAwaiting(true);
+    return true;
+  }
+  if (pendingOperator === 'delete') { cancelPendingOperator(); pendingSurround = { kind: 'ds' }; setAwaiting(true); return true; }
+  if (pendingOperator === 'change') { cancelPendingOperator(); pendingSurround = { kind: 'cs' }; setAwaiting(true); return true; }
+  if (pendingOperator === 'yank') {
+    // `ys`: keep the yank armed and divert the next motion/text-object range.
+    surroundYsArmed = true;
+    rangeInterceptor = async (_e, range) => {
+      surroundYsArmed = false;
+      surroundRange = range;
+      pendingSurround = { kind: 'wrap' };
+      setAwaiting(true);
+    };
+    return true;
+  }
+  return false;
+}
+
+/** Visual `S` — surround the selection. */
+export function visualSurround(): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  surroundRange = new vscode.Range(editor.selection.start, editor.selection.end);
+  setMode(editor, Mode.Normal);
+  pendingSurround = { kind: 'wrap' };
+  setAwaiting(true);
+}
+
+async function wrapRange(editor: vscode.TextEditor, range: vscode.Range, char: string): Promise<void> {
+  const pair = SURROUND_PAIR[char];
+  if (!pair) return;
+  await editor.edit((eb) => { eb.insert(range.end, pair.close); eb.insert(range.start, pair.open); });
+  editor.selection = new vscode.Selection(range.start, range.start);
+}
+
+/** The delimiter ranges of the surround CHAR enclosing the cursor, or null. */
+function surroundDelims(editor: vscode.TextEditor, char: string): { open: vscode.Range; close: vscode.Range } | null {
+  const id = SURROUND_OBJ[char];
+  if (!id) return null;
+  const doc = editor.document;
+  const pos = editor.selection.active;
+  const inner = textObjectRange(doc, pos, id, false);
+  if (!inner) return null;
+  if (id === 'tag') {
+    const around = textObjectRange(doc, pos, id, true);
+    if (!around) return null;
+    return {
+      open: new vscode.Range(around.range.start, inner.range.start),
+      close: new vscode.Range(inner.range.end, around.range.end),
+    };
+  }
+  // Single-char delimiter: the char just before / at the inner span's edges.
+  const sOff = doc.offsetAt(inner.range.start);
+  const eOff = doc.offsetAt(inner.range.end);
+  return {
+    open: new vscode.Range(doc.positionAt(sOff - 1), inner.range.start),
+    close: new vscode.Range(inner.range.end, doc.positionAt(eOff + 1)),
+  };
+}
+
+async function deleteSurround(editor: vscode.TextEditor, char: string): Promise<void> {
+  const d = surroundDelims(editor, char);
+  if (!d) return;
+  await editor.edit((eb) => { eb.delete(d.close); eb.delete(d.open); });
+}
+
+async function changeSurround(editor: vscode.TextEditor, oldChar: string, newChar: string): Promise<void> {
+  const d = surroundDelims(editor, oldChar);
+  const pair = SURROUND_PAIR[newChar];
+  if (!d || !pair) return;
+  await editor.edit((eb) => { eb.replace(d.close, pair.close); eb.replace(d.open, pair.open); });
+}
+
+/** A char arrived while a surround was pending (called from provideChar). */
+export async function provideSurroundChar(editor: vscode.TextEditor, char: string): Promise<void> {
+  const ps = pendingSurround;
+  pendingSurround = null;
+  setAwaiting(false);
+  if (!ps) return;
+  if (ps.kind === 'cs') { pendingSurround = { kind: 'cs2', oldChar: char }; setAwaiting(true); return; }
+  if (ps.kind === 'ds') {
+    await deleteSurround(editor, char);
+    recordChange(async () => { const e = activeEditor(); if (e) await deleteSurround(e, char); });
+    return;
+  }
+  if (ps.kind === 'cs2') { await changeSurround(editor, ps.oldChar, char); return; }
+  // wrap: ys / yss / Visual S
+  const range = surroundRange;
+  surroundRange = null;
+  if (range) await wrapRange(editor, range, char);
 }

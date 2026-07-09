@@ -463,6 +463,10 @@
         "title": "ViNEL: Reselect last Visual selection (gv)"
       },
       {
+        "command": "vinel.visualSurround",
+        "title": "ViNEL: Surround selection (visual S)"
+      },
+      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3214,6 +3218,11 @@
         "command": "vinel.reselectVisual",
         "key": "g v",
         "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.visualSurround",
+        "key": "shift+s",
+        "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
       }
     ]
   },

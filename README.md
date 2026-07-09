@@ -182,6 +182,19 @@ not. One `:%s` is a single undo.
 Use `a` instead of `i` for the "around" (delimiters-included) form: `ci"`,
 `da(`, `yi{`, `vip`, …
 
+### Surround (vim-surround)
+| Key | Action |
+|-----|--------|
+| `ys{motion}{c}` | Surround the motion / text object with `{c}` — `ysiw"`, `ysa(`, `ys$)` |
+| `yss{c}` | Surround the whole line |
+| `S{c}` (in Visual) | Surround the selection |
+| `ds{c}` | Delete the surrounding `{c}` — `ds"`, `ds)`, `dst` (a tag) |
+| `cs{old}{new}` | Change surrounding `{old}` → `{new}` — `cs"'`, `cs)]` |
+
+`{c}` is one of `)( b` · `][` · `}{ B` · `>< ` · `"` `'` `` ` `` · `t` (tag). The
+"open" variants add inner spaces: `ysiw(` → `( word )`, `ysiw)` → `(word)`.
+Tip: `ys` must be followed straight away by a motion/object (as in vim).
+
 ### Visual mode
 | Key | Action |
 |-----|--------|
@@ -350,10 +363,11 @@ restore it after a reinstall.
 
 ## Not built yet
 
-Sentence text objects / motions (`is`/`as`, `(` / `)`). Everything else above —
+Sentence text objects / motions (`is`/`as`, `(` / `)`), case operators
+(`gu`/`gU`/`g~` + motion), and `?` backward search. Everything else above —
 marks, named registers, Ex-commands, Replace mode, blockwise Visual, macros,
-leader mappings, and tag objects — is built and native, with no companion
-extension required.
+leader mappings, tag objects, and surround — is built and native, with no
+companion extension required.
 
 ## Feedback & bug reports
 
