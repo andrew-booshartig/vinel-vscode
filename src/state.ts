@@ -215,6 +215,12 @@ export function zeroIsMotion(): boolean {
   return pendingCount === '';
 }
 
+/** Whether a numeric count is currently buffered — lets `G`/`gg` tell
+ * `{count}G` (absolute line) apart from a bare `G` (last/first line). */
+export function hasPendingCount(): boolean {
+  return pendingCount !== '';
+}
+
 /** Read the pending count (default 1) and clear the buffer. Call this from
  * every NORMAL-mode motion/command exactly once, after digits, so the count
  * applies to the NEXT command and resets afterward — matching vim. */

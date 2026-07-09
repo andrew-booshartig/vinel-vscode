@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { afterMotion, consumeCount, isVisual, repeatCommand, setActive } from './state';
+import { afterMotion, consumeCount, hasPendingCount, isVisual, repeatCommand, setActive } from './state';
 
 /**
  * Core motions — the vim-standard set, count-aware, shared by NORMAL and
@@ -108,8 +108,28 @@ export function firstNonBlank(): void {
  */
 export const lineEnd = () => activeEditor() && move(activeEditor()!, 'cursorEnd');
 
-export const bufferTop = () => activeEditor() && move(activeEditor()!, 'cursorTop');
-export const bufferBottom = () => activeEditor() && move(activeEditor()!, 'cursorBottom');
+// `gg`/`G`: a bare press goes to the first/last line; `{count}gg`/`{count}G`
+// goes to that absolute line (1-based), first non-blank — like vim.
+export const bufferTop = () => {
+  const e = activeEditor();
+  if (!e) return;
+  return hasPendingCount() ? gotoLine(e, consumeCount(e) - 1) : move(e, 'cursorTop');
+};
+export const bufferBottom = () => {
+  const e = activeEditor();
+  if (!e) return;
+  return hasPendingCount() ? gotoLine(e, consumeCount(e) - 1) : move(e, 'cursorBottom');
+};
+
+/** Move to LINE (0-based, clamped), first non-blank — respecting Visual. */
+function gotoLine(editor: vscode.TextEditor, line: number): void {
+  const last = editor.document.lineCount - 1;
+  const l = Math.max(0, Math.min(line, last));
+  const pos = new vscode.Position(l, firstNonBlankCol(editor.document, l));
+  setActive(editor, pos);
+  afterMotion(editor);
+  editor.revealRange(new vscode.Range(pos, pos));
+}
 
 /** `{` / `}` — previous/next paragraph. Vim's definition: a paragraph
  * boundary is a blank line (a run of blank lines counts as one boundary)
