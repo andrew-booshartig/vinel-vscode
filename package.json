@@ -112,7 +112,11 @@
       },
       {
         "command": "vinel.search",
-        "title": "ViNEL: Search (/)"
+        "title": "ViNEL: Search forward (/)"
+      },
+      {
+        "command": "vinel.searchBackward",
+        "title": "ViNEL: Search backward (?)"
       },
       {
         "command": "vinel.opDelete",
@@ -1304,6 +1308,11 @@
       {
         "command": "vinel.search",
         "key": "/",
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
+      },
+      {
+        "command": "vinel.searchBackward",
+        "key": "shift+/",
         "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       },
       {

@@ -335,6 +335,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.paragraphBackward', operators.operatorMotion(motions.paragraphBackward, 'exclusive')],
     ['vinel.paragraphForward', operators.operatorMotion(motions.paragraphForward, 'exclusive')],
     ['vinel.search', motions.search],
+    ['vinel.searchBackward', motions.searchBack],
 
     ['vinel.opDelete', operators.operatorKey('delete')],
     ['vinel.opChange', operators.operatorKey('change')],

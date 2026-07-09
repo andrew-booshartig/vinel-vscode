@@ -51,8 +51,8 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `f{c}` `F{c}` | Jump to next / previous `{c}` on the line |
 | `t{c}` `T{c}` | Jump just before / after next / previous `{c}` |
 | `;` `,` | Repeat last `f`/`t` forward / reversed |
-| `/` | Find (VS Code's native search) |
-| `n` `N` | Next / previous search match |
+| `/` `?` | Search forward / backward (VS Code's native Find) |
+| `n` `N` | Repeat the search in the same / opposite direction |
 | `*` `#` | Search word under cursor forward / backward |
 | `Ctrl-D` `Ctrl-U` | Half page down / up |
 | `Ctrl-F` `Ctrl-B` | Page down / up |
@@ -368,11 +368,11 @@ restore it after a reinstall.
 
 ## Not built yet
 
-Sentence text objects / motions (`is`/`as`, `(` / `)`), case operators
-(`gu`/`gU`/`g~` + motion), and `?` backward search. Everything else above —
-marks, named registers, Ex-commands, Replace mode, blockwise Visual, macros,
-leader mappings, tag objects, and surround — is built and native, with no
-companion extension required.
+A few niceties remain: numbered / system-clipboard registers (`"0`, `"+`), the
+`(` / `)` sentence *motions*, and treesitter function/class objects (`if`/`af`).
+Everything else documented above — modes, motions, operators, text objects,
+marks & named registers, Ex-commands, macros, leader mappings, surround, and case
+operators — is built and native, with no companion extension required.
 
 ## Feedback & bug reports
 

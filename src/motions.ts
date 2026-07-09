@@ -174,11 +174,16 @@ async function paragraphMove(direction: 1 | -1): Promise<void> {
 export const paragraphBackward = () => paragraphMove(-1);
 export const paragraphForward = () => paragraphMove(1);
 
-/** `/` — VSCode's own native Find, not a hand-built vim search reimplementation.
- * Same call the Emacs port made for isearch: when the host platform already
- * has an excellent, idiomatic search experience, use it rather than
- * reimplementing vim's search-and-jump as a leaky abstraction on top. */
-export const search = () => vscode.commands.executeCommand('actions.find');
+/** `/` `?` — VSCode's own native Find, not a hand-built vim search
+ * reimplementation. Same call the Emacs port made for isearch: when the host
+ * platform already has an excellent, idiomatic search experience, use it rather
+ * than reimplementing vim's search-and-jump as a leaky abstraction on top.
+ * `/` searches forward, `?` backward — the direction is remembered so `n`/`N`
+ * continue the right way. */
+let searchBackward = false;
+export const search = () => { searchBackward = false; return vscode.commands.executeCommand('actions.find'); };
+export const searchBack = () => { searchBackward = true; return vscode.commands.executeCommand('actions.find'); };
+export function isSearchBackward(): boolean { return searchBackward; }
 
 // ── W / B / E — WORD motions (whitespace-delimited) ─────────────────────────
 // Unlike w/b/e (which stop at punctuation), a WORD is a run of non-whitespace.
@@ -341,10 +346,14 @@ export const screenBottom = () => screenMotion('L');
 
 // ── n / N / * / # — search repeat + word-under-cursor ───────────────────────
 
-export const searchNext = () => vscode.commands.executeCommand('editor.action.nextMatchFindAction');
-export const searchPrev = () => vscode.commands.executeCommand('editor.action.previousMatchFindAction');
+// `n` repeats the search in its original direction; `N` reverses it.
+export const searchNext = () => vscode.commands.executeCommand(
+  searchBackward ? 'editor.action.previousMatchFindAction' : 'editor.action.nextMatchFindAction');
+export const searchPrev = () => vscode.commands.executeCommand(
+  searchBackward ? 'editor.action.nextMatchFindAction' : 'editor.action.previousMatchFindAction');
 
 async function searchWord(forward: boolean): Promise<void> {
+  searchBackward = !forward; // `*` forward, `#` backward — `n`/`N` follow suit
   const editor = activeEditor();
   if (!editor) return;
   const range = editor.document.getWordRangeAtPosition(editor.selection.active);
