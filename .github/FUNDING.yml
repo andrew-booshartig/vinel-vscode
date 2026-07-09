@@ -1,0 +1,5 @@
+# Shows a "Sponsor" button on the GitHub repo.
+# Buy Me a Coffee works right now. Once your GitHub Sponsors profile is approved
+# (after Stripe onboarding finishes), uncomment the `github:` line below.
+custom: ["https://buymeacoffee.com/andrewbooshartig"]
+# github: [andrew-booshartig]
