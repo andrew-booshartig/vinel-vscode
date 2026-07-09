@@ -423,6 +423,8 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.wordForwardBig', operators.operatorMotion(motions.wordForwardBig, 'exclusive')],
     ['vinel.wordBackwardBig', operators.operatorMotion(motions.wordBackwardBig, 'exclusive')],
     ['vinel.wordEndBig', operators.operatorMotion(motions.wordEndBig, 'inclusive')],
+    ['vinel.backWordEnd', operators.operatorMotion(motions.backWordEnd, 'inclusive')],
+    ['vinel.backWordEndBig', operators.operatorMotion(motions.backWordEndBig, 'inclusive')],
     ['vinel.matchBracket', operators.operatorMotion(motions.matchBracket, 'inclusive')],
     ['vinel.lineUp', operators.operatorMotion(motions.lineUp, 'linewise')],
     ['vinel.lineDown', operators.operatorMotion(motions.lineDown, 'linewise')],

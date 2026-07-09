@@ -479,6 +479,14 @@
         "title": "ViNEL: Toggle case over motion (g~)"
       },
       {
+        "command": "vinel.backWordEnd",
+        "title": "ViNEL: Back to previous word end (ge)"
+      },
+      {
+        "command": "vinel.backWordEndBig",
+        "title": "ViNEL: Back to previous WORD end (gE)"
+      },
+      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3250,6 +3258,16 @@
         "command": "vinel.caseToggle",
         "key": "g shift+`",
         "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.backWordEnd",
+        "key": "g e",
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
+      },
+      {
+        "command": "vinel.backWordEndBig",
+        "key": "g shift+e",
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
       }
     ]
   },

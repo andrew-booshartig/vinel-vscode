@@ -41,6 +41,7 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `h` `j` `k` `l` / arrows | Left / down / up / right |
 | `w` `b` `e` | Word forward / back / end |
 | `W` `B` `E` | WORD (whitespace-delimited) forward / back / end |
+| `ge` `gE` | Back to the end of the previous word / WORD |
 | `0` `^` `$` | Line start / first non-blank / line end |
 | `-` `+` `_` `g_` | First non-blank of prev / next line · first / last non-blank |
 | `gg` `G` | Top / bottom of file (`{count}G` → line) |

@@ -228,6 +228,44 @@ export const wordForwardBig = () => wordMotionBig('W');
 export const wordBackwardBig = () => wordMotionBig('B');
 export const wordEndBig = () => wordMotionBig('E');
 
+// ── ge / gE — backward to the end of the previous word / WORD ────────────────
+
+function smallClass(ch: string | undefined): 'word' | 'punct' | 'space' {
+  if (ch === undefined || /\s/.test(ch)) return 'space';
+  return /\w/.test(ch) ? 'word' : 'punct';
+}
+
+/** The nearest word-end strictly before FROM. `big` = WORD (whitespace only);
+ * else a small word (a run of \w, or a run of punctuation). */
+function prevWordEnd(text: string, from: number, big: boolean): number {
+  for (let i = from - 1; i >= 0; i--) {
+    if (big) {
+      if (!isWs(text[i]) && isWs(text[i + 1])) return i;
+    } else {
+      const c = smallClass(text[i]);
+      if (c !== 'space' && smallClass(text[i + 1]) !== c) return i;
+    }
+  }
+  return 0;
+}
+
+function wordEndBackMotion(big: boolean): void {
+  const editor = activeEditor();
+  if (!editor) return;
+  const n = consumeCount(editor);
+  const doc = editor.document;
+  const text = doc.getText();
+  let offset = doc.offsetAt(editor.selection.active);
+  for (let k = 0; k < n; k++) offset = prevWordEnd(text, offset, big);
+  const pos = doc.positionAt(offset);
+  setActive(editor, pos);
+  afterMotion(editor);
+  editor.revealRange(new vscode.Range(pos, pos));
+}
+
+export const backWordEnd = () => wordEndBackMotion(false);    // ge
+export const backWordEndBig = () => wordEndBackMotion(true);  // gE
+
 // ── % — matching bracket ────────────────────────────────────────────────────
 
 /** `%` — jump to the matching bracket (Visual extends the selection to it).
