@@ -13,6 +13,7 @@ export type TextObjectId =
   | 'dquote' | 'squote' | 'backtick'
   | 'paren' | 'brace' | 'bracket' | 'angle'
   | 'tag'
+  | 'sentence'
   | 'paragraph';
 
 export interface TextObjectResult {
@@ -43,8 +44,45 @@ export function textObjectRange(
   if (id in QUOTE_CHAR) return quoteObject(doc, pos, QUOTE_CHAR[id], around);
   if (id in BRACKET_PAIR) return bracketObject(doc, pos, BRACKET_PAIR[id][0], BRACKET_PAIR[id][1], around);
   if (id === 'tag') return tagObject(doc, pos, around);
+  if (id === 'sentence') return sentenceObject(doc, pos, around);
   if (id === 'paragraph') return paragraphObject(doc, pos, around);
   return null;
+}
+
+// ── sentence (`is` / `as`) ───────────────────────────────────────────────────
+// A sentence ends at `.`/`!`/`?` (plus any trailing `)`/`]`/`"`/`'`) followed by
+// whitespace or end-of-line. `is` is the sentence; `as` also takes the trailing
+// spaces. Blank lines aren't crossed (a simple, useful subset of vim's rules).
+
+function sentenceObject(doc: vscode.TextDocument, pos: vscode.Position, around: boolean): TextObjectResult | null {
+  const text = doc.getText();
+  const n = text.length;
+  if (n === 0) return null;
+  const cursor = Math.min(doc.offsetAt(pos), n - 1);
+
+  // Every sentence terminator: content end (after punctuation/closers) + the
+  // offset where the next sentence begins (past the following whitespace).
+  const ends: { contentEnd: number; nextStart: number }[] = [];
+  const re = /[.!?][)\]"']*(?=\s|$)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const contentEnd = m.index + m[0].length;
+    let w = contentEnd;
+    while (w < n && /[ \t]/.test(text[w])) w++;
+    ends.push({ contentEnd, nextStart: w });
+  }
+
+  let start = 0;
+  for (const e of ends) if (e.contentEnd <= cursor) start = e.nextStart;
+  let innerEnd = n;
+  let aroundEnd = n;
+  for (const e of ends) {
+    if (e.contentEnd > cursor) { innerEnd = e.contentEnd; aroundEnd = e.nextStart; break; }
+  }
+
+  const s = doc.positionAt(Math.min(start, cursor));
+  const e = doc.positionAt(around ? aroundEnd : innerEnd);
+  return { range: new vscode.Range(s, e), linewise: false };
 }
 
 // ── tag pair (`it` / `at`) — the innermost <tag>…</tag> around the cursor ─────

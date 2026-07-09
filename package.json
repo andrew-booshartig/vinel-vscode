@@ -2194,6 +2194,12 @@
         "args": "tag"
       },
       {
+        "command": "vinel.provideTextObject",
+        "key": "s",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
+        "args": "sentence"
+      },
+      {
         "command": "vinel.provideMark",
         "key": "a",
         "when": "editorTextFocus && vinel.awaitingMark",

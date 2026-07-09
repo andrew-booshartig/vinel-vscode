@@ -181,6 +181,7 @@ not. One `:%s` is a single undo.
 | `i{` `i}` `iB` | Inner / around `{}` (`iB` alias) |
 | `i[` `i]` · `i<` `i>` | Inner / around `[]` · `<>` |
 | `it` `at` | Inner / around an HTML/XML/JSX tag pair |
+| `is` `as` | Inner / around a sentence |
 | `ip` `ap` | Inner / around paragraph |
 
 Use `a` instead of `i` for the "around" (delimiters-included) form: `ci"`,
