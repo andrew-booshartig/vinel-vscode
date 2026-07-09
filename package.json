@@ -467,6 +467,18 @@
         "title": "ViNEL: Surround selection (visual S)"
       },
       {
+        "command": "vinel.caseLower",
+        "title": "ViNEL: Lowercase over motion (gu)"
+      },
+      {
+        "command": "vinel.caseUpper",
+        "title": "ViNEL: Uppercase over motion (gU)"
+      },
+      {
+        "command": "vinel.caseToggle",
+        "title": "ViNEL: Toggle case over motion (g~)"
+      },
+      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3223,6 +3235,21 @@
         "command": "vinel.visualSurround",
         "key": "shift+s",
         "when": "editorTextFocus && (vinel.mode == 'visual' || vinel.mode == 'visual-line')"
+      },
+      {
+        "command": "vinel.caseLower",
+        "key": "g u",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.caseUpper",
+        "key": "g shift+u",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.caseToggle",
+        "key": "g shift+`",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
       }
     ]
   },

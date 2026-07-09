@@ -65,6 +65,7 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `s` `S` | Substitute char / whole line (delete + insert) |
 | `r{c}` | Replace char(s) with `{c}` |
 | `~` | Toggle case of char(s) |
+| `gu{m}` `gU{m}` `g~{m}` | Lower / upper / toggle case over motion `{m}` (`guiw`, `gU$`, `g~j`) |
 | `Ctrl-A` `Ctrl-X` | Increment / decrement the number at/after the cursor (`{count}` too) |
 | `J` | Join lines |
 | `>>` `<<` | Indent / outdent line(s) |

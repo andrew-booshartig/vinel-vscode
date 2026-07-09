@@ -398,6 +398,9 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.visualUpper', operators.visualUpper],
     ['vinel.visualToggleCase', operators.visualToggleCase],
     ['vinel.visualSurround', operators.visualSurround],
+    ['vinel.caseLower', operators.caseOperator('lower')],
+    ['vinel.caseUpper', operators.caseOperator('upper')],
+    ['vinel.caseToggle', operators.caseOperator('toggle')],
 
     // Insert-entry variants + text-object prefixes
     ['vinel.iKey', iKey],

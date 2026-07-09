@@ -1113,6 +1113,37 @@ async function changeSurround(editor: vscode.TextEditor, oldChar: string, newCha
   await editor.edit((eb) => { eb.replace(d.close, pair.close); eb.replace(d.open, pair.open); });
 }
 
+// ── Case operators (gu / gU / g~ + motion) ──────────────────────────────────
+// Reuse the same range interceptor: arm the yank operator so the next
+// motion/text object hands us its range, then transform the text in place
+// (`guiw`, `gU$`, `g~j`). Doubled forms (`guu`) aren't wired — use `Vu`/`VU`.
+
+type CaseKind = 'lower' | 'upper' | 'toggle';
+
+function transformCase(text: string, kind: CaseKind): string {
+  if (kind === 'lower') return text.toLowerCase();
+  if (kind === 'upper') return text.toUpperCase();
+  return Array.from(text)
+    .map((c) => (c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase()))
+    .join('');
+}
+
+export function caseOperator(kind: CaseKind) {
+  return () => {
+    const editor = activeEditor();
+    if (!editor) return;
+    cancelPendingSurround();
+    operatorCount = consumeCount(editor);
+    pendingOperator = 'yank'; // armed only so a motion captures a range
+    setPendingOperatorLabel(kind === 'lower' ? 'gu' : kind === 'upper' ? 'gU' : 'g~');
+    rangeInterceptor = async (ed, range) => {
+      const out = transformCase(ed.document.getText(range), kind);
+      await ed.edit((eb) => eb.replace(range, out));
+      ed.selection = new vscode.Selection(range.start, range.start);
+    };
+  };
+}
+
 /** A char arrived while a surround was pending (called from provideChar). */
 export async function provideSurroundChar(editor: vscode.TextEditor, char: string): Promise<void> {
   const ps = pendingSurround;
