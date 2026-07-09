@@ -57,3 +57,10 @@ export function getRegister(): RegisterValue {
   const key = src && /[a-zA-Z]/.test(src) ? src.toLowerCase() : UNNAMED;
   return registers.get(key) ?? { text: '', linewise: false };
 }
+
+/** Read a register's text BY NAME without touching the pending register — used
+ * by insert-mode `Ctrl-R{reg}`. `"` / undefined = the unnamed register. */
+export function readRegister(name?: string): string {
+  const key = name && /[a-zA-Z]/.test(name) ? name.toLowerCase() : UNNAMED;
+  return registers.get(key)?.text ?? '';
+}

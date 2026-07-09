@@ -84,6 +84,7 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `"{a-z}` + op | Use a named register (`"ayy` yanks to `a`, `"ap` pastes from it) |
 | `"{A-Z}` + op | Append to a register (`"Ayy`) |
 | `"_` + op | Black-hole register (delete without clobbering the yank) |
+| `Ctrl-R{reg}` (in Insert) | Paste a register's text while typing (`Ctrl-R"`, `Ctrl-Ra`) |
 
 ### Macros
 | Key | Action |
