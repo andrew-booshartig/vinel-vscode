@@ -2,7 +2,7 @@
   "name": "vinel",
   "displayName": "ViNEL — Vim & Neovim modal editing",
   "description": "Vim / Neovim modal editing for VS Code — ViNEL Is Not an Emulation Layer. A native modal state machine (normal/visual/insert modes, operators, text objects, dot-repeat, find-char) routed straight to VS Code's own commands. Not a Vim emulation and not a Neovim bridge: no type-hijack, no shadow undo — fast on big files.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "andrew-booshartig",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -3051,7 +3051,9 @@
       {
         "command": "type",
         "key": "enter",
-        "args": { "text": "\n" },
+        "args": {
+          "text": "\n"
+        },
         "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace') && !suggestWidgetVisible && !inSnippetMode"
       },
       {
