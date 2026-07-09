@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "publisher": "andrew-booshartig",
   "license": "MIT",
+  "icon": "images/icon.png",
   "keywords": [
     "vim",
     "vi",
@@ -27,6 +28,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/andrew-booshartig/vinel-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/andrew-booshartig/vinel-vscode/issues"
   },
   "engines": {
     "vscode": "^1.90.0"
@@ -426,6 +430,42 @@
       {
         "command": "vinel.provideMacro",
         "title": "ViNEL: (internal) supply macro slot"
+      },
+      {
+        "command": "vinel.macroRecordToggle",
+        "title": "ViNEL: Toggle macro recording (any mode)"
+      },
+      {
+        "command": "vinel.macroPlayLast",
+        "title": "ViNEL: Replay last macro (any mode)"
+      },
+      {
+        "command": "vinel.recExec",
+        "title": "ViNEL: (internal) run + record a built-in key while recording"
+      },
+      {
+        "command": "vinel.enterVisualBlock",
+        "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
+      },
+      {
+        "command": "vinel.blockInsert",
+        "title": "ViNEL: Block insert at left edge (visual-block I)"
+      },
+      {
+        "command": "vinel.blockAppend",
+        "title": "ViNEL: Block append at right edge (visual-block A)"
+      },
+      {
+        "command": "vinel.blockDelete",
+        "title": "ViNEL: Delete block (visual-block d/x)"
+      },
+      {
+        "command": "vinel.blockChange",
+        "title": "ViNEL: Change block (visual-block c)"
+      },
+      {
+        "command": "vinel.blockYank",
+        "title": "ViNEL: Yank block (visual-block y)"
       }
     ],
     "keybindings": [
@@ -2751,6 +2791,243 @@
         "key": "shift+2",
         "when": "editorTextFocus && vinel.awaitingMacro",
         "args": "@"
+      },
+      {
+        "command": "vinel.macroRecordToggle",
+        "key": "ctrl+f2",
+        "mac": "cmd+f2",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vinel.macroPlayLast",
+        "key": "ctrl+f3",
+        "mac": "cmd+f3",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vinel.enterVisualBlock",
+        "key": "ctrl+v",
+        "when": "editorTextFocus && (vinel.mode != 'insert' && vinel.mode != 'replace')"
+      },
+      {
+        "command": "vinel.blockLeft",
+        "key": "h",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockLeft",
+        "key": "left",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDown",
+        "key": "j",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDown",
+        "key": "down",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockUp",
+        "key": "k",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockUp",
+        "key": "up",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockRight",
+        "key": "l",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockRight",
+        "key": "right",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockLineStart",
+        "key": "0",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockLineEnd",
+        "key": "shift+4",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDelete",
+        "key": "d",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDelete",
+        "key": "x",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDelete",
+        "key": "delete",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDelete",
+        "key": "backspace",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockChange",
+        "key": "c",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockYank",
+        "key": "y",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockInsert",
+        "key": "shift+i",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockAppend",
+        "key": "shift+a",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.moveLeft",
+        "key": "shift+left",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.moveRight",
+        "key": "shift+right",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.moveUp",
+        "key": "shift+up",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.moveDown",
+        "key": "shift+down",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.blockLeft",
+        "key": "shift+left",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockRight",
+        "key": "shift+right",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockUp",
+        "key": "shift+up",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.blockDown",
+        "key": "shift+down",
+        "when": "editorTextFocus && vinel.mode == 'visual-block'"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "left",
+        "args": "cursorLeft",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "right",
+        "args": "cursorRight",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "up",
+        "args": "cursorUp",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "down",
+        "args": "cursorDown",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "shift+left",
+        "args": "cursorLeftSelect",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "shift+right",
+        "args": "cursorRightSelect",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "shift+up",
+        "args": "cursorUpSelect",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "shift+down",
+        "args": "cursorDownSelect",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "backspace",
+        "args": "deleteLeft",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "delete",
+        "args": "deleteRight",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "home",
+        "args": "cursorHome",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "end",
+        "args": "cursorEnd",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "shift+home",
+        "args": "cursorHomeSelect",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "vinel.recExec",
+        "key": "shift+end",
+        "args": "cursorEndSelect",
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace')"
+      },
+      {
+        "command": "type",
+        "key": "enter",
+        "args": { "text": "\n" },
+        "when": "editorTextFocus && vinel.recordingMacro && (vinel.mode == 'insert' || vinel.mode == 'replace') && !suggestWidgetVisible && !inSnippetMode"
       }
     ]
   },

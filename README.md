@@ -29,6 +29,7 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `I` / `A` | Insert at first non-blank / end of line |
 | `o` / `O` | Open a line below / above and insert |
 | `v` / `V` | Charwise / linewise Visual mode (press again or `Esc` to exit) |
+| `Ctrl-V` | Blockwise (columnar) Visual — see the Blockwise section below |
 | `R` | Replace (overtype) mode — typing overwrites; Backspace restores |
 
 ### Motions (Normal & Visual)
@@ -87,12 +88,57 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `q{a-z}` … `q` | Record a macro into a slot, stop with `q` |
 | `@{a-z}` | Replay the macro (`{count}@a` replays N times) |
 | `@@` | Replay the last macro |
+| `Cmd/Ctrl+F2` | **Toggle recording — works in *any* mode** (incl. Insert), into a default slot |
+| `Cmd/Ctrl+F3` | **Replay the last-recorded macro** — prefix a count in Normal (`3`+`Cmd/Ctrl+F3` = 3×) |
 
-Macros are recorded as ViNEL's own command sequence (plus text typed in
-Insert) — there's no always-on `type` hijack, so no dependency on a second
-extension. The one place ViNEL touches `type` is Replace mode, and only while
-`R` is active (the handler is disposed the instant you leave it) — Insert-mode
-typing is always 100% native.
+Macros are **entirely ViNEL's own** — no companion extension, ever. They record
+**literal keystrokes**: ViNEL commands, the characters you type in Insert, and
+the Insert-mode navigation keys you press (arrows, Backspace, Home/End). Replay
+re-issues typed characters through VS Code's real typing pipeline, so
+**auto-indent, auto-closing pairs, auto-surround, and LSP edits all react on
+replay exactly as they did while recording** — e.g. selecting a word and typing
+`'` to wrap it replays as a wrap, not a literal quote. Replay honors a numeric
+**prefix** with no pop-up dialog — type the count, fire the chord, done.
+
+(How, without the always-on `type` hijack that makes other Vim extensions lag:
+the keystroke capture — a scoped `type` override plus recording-only navigation
+keybindings — is installed only while the red badge is showing and torn down the
+instant you stop. Off the record path, Insert typing is 100% native.)
+
+`Cmd+F2` (Mac) / `Ctrl+F2` (Windows/Linux) and `F3` are state-independent:
+unlike `q`/`@` (Normal-only), they fire in every mode — start recording
+mid-Insert, keep typing, stop without leaving home row. A red **⏺ REC** badge
+sits in the status bar while recording. `Cmd/Ctrl+F3` replays whatever you
+recorded most recently (a `q{letter}` macro or an F2 one) and restores the mode
+you recorded *from*, so playback is correct wherever you trigger it.
+
+The one place ViNEL touches `type` is Replace mode, and only while `R` is active
+(the handler is disposed the instant you leave it) — Insert-mode typing is
+always 100% native.
+
+> `F2`/`F3` are only the **defaults** — change the record/playback combos to
+> whatever you like. See [Customizing keybindings](#customizing-keybindings).
+
+### Blockwise Visual (`Ctrl-V`)
+| Key | Action |
+|-----|--------|
+| `Ctrl-V` | Enter blockwise Visual (a *columnar* / rectangular selection) |
+| `h` `j` `k` `l` / arrows | Grow / shrink the rectangle |
+| `0` `$` | Left edge to column 0 · right edge to each line's end (ragged) |
+| `I` | **Insert at the block's left edge on every selected line at once** |
+| `A` | **Append at the block's right edge (or line end after `$`) on every line** |
+| `d` `x` · `c` · `y` | Delete · change · yank the rectangle |
+
+Blockwise selects the same **columns** across a range of **lines** — a tall box
+instead of a run of text. Its signature move is block insert: make a column
+selection down N lines, press `I` (or `A`), type once, `Esc` — and the text lands
+on *every* line at that column. ViNEL does this with VS Code's own multi-cursor
+(one cursor per row), so the broadcast typing is fully native.
+
+> **`Ctrl-V` note:** on Windows/Linux `Ctrl-V` is normally Paste; ViNEL rebinds
+> it to blockwise Visual while in Normal/Visual (matching vim). Paste on Mac is
+> `Cmd+V` and is unaffected. To keep `Ctrl-V` as paste, remove/rebind
+> `vinel.enterVisualBlock` in your keybindings.json (same mechanism as above).
 
 ### Ex-commands (`:`)
 Opens VS Code's input box; Enter runs, Escape cancels.
@@ -146,6 +192,83 @@ Use `a` instead of `i` for the "around" (delimiters-included) form: `ci"`,
 | `o` | Jump to the other end of the selection |
 | `i{obj}` `a{obj}` | Select a text object |
 
+## Customizing keybindings
+
+**Every key here is rebindable — nothing is locked.** ViNEL contributes plain VS
+Code keybindings, so you override them the same way you'd override any built-in
+shortcut. The macro **record** and **playback** combos are the ones people most
+often want to change, so here's exactly how.
+
+### The two macro shortcuts (defaults)
+| Action | Default key | Command id (this is what you rebind) |
+|--------|-------------|--------------------------------------|
+| Start / stop recording | `Cmd+F2` (mac) · `Ctrl+F2` (Win/Linux) | `vinel.macroRecordToggle` |
+| Replay last macro | `Cmd+F3` (mac) · `Ctrl+F3` (Win/Linux) | `vinel.macroPlayLast` |
+
+### Option A — the Keyboard Shortcuts UI (no JSON)
+1. Open the Command Palette (`Cmd/Ctrl+Shift+P`) → **Preferences: Open Keyboard Shortcuts**.
+2. In the search box type **`ViNEL: Toggle macro recording`** (or **`ViNEL: Replay last macro`**).
+3. Double-click the row, press your desired key combo, hit Enter. Done — your
+   binding automatically takes priority over the default.
+
+### Option B — edit `keybindings.json` directly
+Command Palette → **Preferences: Open Keyboard Shortcuts (JSON)**, then add:
+
+```jsonc
+[
+  // Pick any combos you like — these replace F2 / F3:
+  { "key": "cmd+shift+2", "command": "vinel.macroRecordToggle", "when": "editorTextFocus" },
+  { "key": "cmd+shift+3", "command": "vinel.macroPlayLast",     "when": "editorTextFocus" },
+
+  // OPTIONAL — turn OFF the built-in F2 / F3 defaults (prefix the command with "-"):
+  { "key": "cmd+f2", "command": "-vinel.macroRecordToggle" },
+  { "key": "cmd+f3", "command": "-vinel.macroPlayLast" }
+]
+```
+
+Notes:
+- Keep `"when": "editorTextFocus"` so the shortcuts work in **every** mode
+  (that's what lets you start/stop recording mid-Insert). To restrict a shortcut
+  to Normal mode only, use `"when": "editorTextFocus && vinel.mode == 'normal'"`.
+- A numeric **prefix** for playback works in Normal mode regardless of the key
+  you choose: type the count, then fire your playback combo (`5` → replay 5×).
+- Your `keybindings.json` always wins over ViNEL's defaults, so you don't have to
+  disable a default before rebinding — the `-command` lines above are only if you
+  want the old key to do nothing.
+
+### Rebinding anything else
+The same recipe works for **any** ViNEL command — search "ViNEL" in the Keyboard
+Shortcuts UI to see them all, or bind by command id in JSON. A few handy ids:
+`vinel.enterVisualBlock` (blockwise `Ctrl-V` — rebind if you want `Ctrl-V` back
+as Paste on Windows/Linux), `vinel.exCommand` (`:`), `vinel.repeatChange` (`.`).
+
+## Leader & custom mappings
+
+ViNEL doesn't invent its own mapping language — you script leader commands with
+**native VS Code chord keybindings**, gated to Normal mode. `Space` is the
+conventional leader and ViNEL leaves it free (bare `Space` in Normal does
+nothing), but any key works.
+
+Command Palette → *Preferences: Open Keyboard Shortcuts (JSON)*, then add chords
+whose `when` is `vinel.mode == 'normal'`:
+
+```jsonc
+[
+  // <leader> = Space
+  { "key": "space f",   "command": "workbench.action.quickOpen",  "when": "editorTextFocus && vinel.mode == 'normal'" },
+  { "key": "space w",   "command": "workbench.action.files.save", "when": "editorTextFocus && vinel.mode == 'normal'" },
+  { "key": "space g g", "command": "workbench.view.scm",          "when": "editorTextFocus && vinel.mode == 'normal'" },
+  // a leader key can fire ViNEL's own commands too
+  { "key": "space m",   "command": "vinel.macroPlayLast",         "when": "editorTextFocus && vinel.mode == 'normal'" }
+]
+```
+
+- **Change your leader** by swapping the first key (`,`, `\`, …).
+- **Sequences** are just multi-key chords — `space g g`, pressed in order.
+- Your `keybindings.json` outranks ViNEL's defaults, so these take over `Space`
+  in Normal automatically. The same works from the Keyboard Shortcuts UI (they're
+  one synced store — see [Customizing keybindings](#customizing-keybindings)).
+
 ## Design note: text objects seek forward (across lines)
 
 If the cursor isn't already inside/on a bracket or quote, `di[` / `ci"` **seek
@@ -179,7 +302,23 @@ code --install-extension vinel-0.0.1.vsix --force
 
 ## Not built yet
 
-Marks (`m` / `` ` `` / `'`), named registers (`"a`), Ex-commands (`:`, `:%s/`),
-blockwise Visual (`Ctrl-V`), Replace mode (`R`), macros, and tag/sentence text
-objects (`it`/`at`, `is`/`as`). User-scriptable leader mappings are planned as
-a companion.
+Tag / sentence text objects (`it`/`at`, `is`/`as`). Everything else above —
+marks, named registers, Ex-commands, Replace mode, blockwise Visual, macros, and
+leader mappings — is built and native, with no companion extension required.
+
+## Feedback & bug reports
+
+- **Bugs / feature requests:** open an issue at
+  <https://github.com/andrew-booshartig/vinel-vscode/issues>.
+- **On the Marketplace:** the extension page's **Q&A** tab and **Ratings &
+  Review** section both reach the publisher.
+- Please include your OS, VS Code version, and steps to reproduce.
+
+## Support
+
+If ViNEL saves you time, you can support development ☕
+**[Buy me a coffee](https://buymeacoffee.com/CHANGE-ME)**
+
+<!-- Replace the link above with your real one (Buy Me a Coffee / Ko-fi / GitHub
+     Sponsors). Setting "sponsor": { "url": "..." } in package.json also adds a
+     Sponsor button to the Marketplace page. -->

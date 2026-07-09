@@ -24,6 +24,7 @@ export enum Mode {
   Insert,
   Visual,
   VisualLine,
+  VisualBlock,
   Replace,
 }
 
@@ -35,6 +36,10 @@ let pendingOperatorLabel: string | null = null;
 // stored anchor — it rides VS Code's own selection anchor. Null outside
 // VisualLine.
 let visualLineAnchor: number | null = null;
+
+// The fixed corner (anchor) for blockwise visual (`Ctrl-V`) — a 2D position, so
+// the rectangle spans between it and the moving corner. Null outside VisualBlock.
+let visualBlockAnchor: vscode.Position | null = null;
 
 let statusBarItem: vscode.StatusBarItem;
 
@@ -50,10 +55,18 @@ export function isNormal(editor: vscode.TextEditor): boolean {
   return getMode(editor) === Mode.Normal;
 }
 
-/** Either visual sub-mode (charwise `v` or linewise `V`). */
+/** Any visual sub-mode (charwise `v`, linewise `V`, or blockwise `Ctrl-V`). */
 export function isVisual(editor: vscode.TextEditor): boolean {
   const m = getMode(editor);
-  return m === Mode.Visual || m === Mode.VisualLine;
+  return m === Mode.Visual || m === Mode.VisualLine || m === Mode.VisualBlock;
+}
+
+/** The fixed corner for blockwise visual — set by `Ctrl-V`, read by the reshape. */
+export function getVisualBlockAnchor(): vscode.Position | null {
+  return visualBlockAnchor;
+}
+export function setVisualBlockAnchor(pos: vscode.Position | null): void {
+  visualBlockAnchor = pos;
 }
 
 /** The anchor line for linewise visual — set by `V`, read by the reshape. */
@@ -112,6 +125,7 @@ export function setMode(editor: vscode.TextEditor, mode: Mode): void {
   // The linewise anchor only makes sense inside VisualLine; any other mode
   // drops it, so it can't leak into a later, unrelated visual session.
   if (mode !== Mode.VisualLine) visualLineAnchor = null;
+  if (mode !== Mode.VisualBlock) visualBlockAnchor = null;
   applyToEditor(editor);
 }
 
@@ -123,6 +137,7 @@ const CONTEXT_VALUE: Record<Mode, string> = {
   [Mode.Insert]: 'insert',
   [Mode.Visual]: 'visual',
   [Mode.VisualLine]: 'visual-line',
+  [Mode.VisualBlock]: 'visual-block',
   [Mode.Replace]: 'replace',
 };
 
@@ -131,6 +146,7 @@ const STATUS_LABEL: Record<Mode, string> = {
   [Mode.Insert]: '☯ INSERT',
   [Mode.Visual]: '☯ VISUAL',
   [Mode.VisualLine]: '☯ V-LINE',
+  [Mode.VisualBlock]: '☯ V-BLOCK',
   [Mode.Replace]: '☯ REPLACE',
 };
 

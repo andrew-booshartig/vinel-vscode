@@ -11,6 +11,7 @@ import * as excommand from './excommand';
 import * as marks from './marks';
 import * as replace from './replace';
 import * as macros from './macros';
+import * as blockwise from './blockwise';
 
 /**
  * ViNEL — a native modal-editing state machine for VSCode. Not an
@@ -43,6 +44,12 @@ function enterNormal(): void {
   // Leaving Insert → finalize the dot-repeat change (captures the typed text).
   if (getMode(editor) === Mode.Insert) dotrepeat.finishInsertChange(editor);
   if (getMode(editor) === Mode.Replace) replace.exitReplace(); // drop the scoped type handler
+  // Leaving a block insert (I/A/c) with several cursors: collapse to the primary,
+  // like vim returning to a single caret after Ctrl-V insert.
+  if (getMode(editor) === Mode.Insert && editor.selections.length > 1) {
+    const pos = editor.selection.active;
+    editor.selection = new vscode.Selection(pos, pos);
+  }
   operators.cancelPendingOperator();   // Escape cancels a half-typed d/c/y, like vim
   operators.cancelPendingChar();       // …and a half-typed f/t/r
   operators.cancelPendingTextObject(); // …and a half-typed i/a text object
@@ -322,6 +329,23 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.macroRecord', macros.macroRecordKey],
     ['vinel.macroReplay', macros.macroReplayKey],
     ['vinel.provideMacro', macros.provideMacro],
+    ['vinel.macroRecordToggle', macros.macroRecordToggle],
+    ['vinel.macroPlayLast', macros.macroPlayLast],
+    ['vinel.recExec', macros.recExec],
+
+    // Blockwise Visual (Ctrl-V)
+    ['vinel.enterVisualBlock', blockwise.enterVisualBlock],
+    ['vinel.blockLeft', blockwise.blockLeft],
+    ['vinel.blockRight', blockwise.blockRight],
+    ['vinel.blockUp', blockwise.blockUp],
+    ['vinel.blockDown', blockwise.blockDown],
+    ['vinel.blockLineStart', blockwise.blockLineStart],
+    ['vinel.blockLineEnd', blockwise.blockLineEnd],
+    ['vinel.blockInsert', blockwise.blockInsert],
+    ['vinel.blockAppend', blockwise.blockAppend],
+    ['vinel.blockDelete', blockwise.blockDelete],
+    ['vinel.blockChange', blockwise.blockChange],
+    ['vinel.blockYank', blockwise.blockYank],
 
     // Visual-mode operators
     ['vinel.visualDelete', operators.visualDelete],
@@ -392,6 +416,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // macro controls themselves and the no-op suppressor.
   const MACRO_EXCLUDE = new Set([
     'vinel.macroRecord', 'vinel.macroReplay', 'vinel.provideMacro', 'vinel.suppressKey',
+    'vinel.macroRecordToggle', 'vinel.macroPlayLast',
   ]);
   for (const [id, handler] of commands) {
     const recorded = async (...args: unknown[]): Promise<unknown> => {
