@@ -2160,6 +2160,12 @@
         "args": "paragraph"
       },
       {
+        "command": "vinel.provideTextObject",
+        "key": "t",
+        "when": "editorTextFocus && vinel.awaitingTextObject",
+        "args": "tag"
+      },
+      {
         "command": "vinel.provideMark",
         "key": "a",
         "when": "editorTextFocus && vinel.awaitingMark",

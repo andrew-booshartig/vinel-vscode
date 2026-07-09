@@ -12,6 +12,7 @@ export type TextObjectId =
   | 'word' | 'WORD'
   | 'dquote' | 'squote' | 'backtick'
   | 'paren' | 'brace' | 'bracket' | 'angle'
+  | 'tag'
   | 'paragraph';
 
 export interface TextObjectResult {
@@ -41,7 +42,50 @@ export function textObjectRange(
   if (id === 'word' || id === 'WORD') return wordObject(doc, pos, id === 'WORD', around);
   if (id in QUOTE_CHAR) return quoteObject(doc, pos, QUOTE_CHAR[id], around);
   if (id in BRACKET_PAIR) return bracketObject(doc, pos, BRACKET_PAIR[id][0], BRACKET_PAIR[id][1], around);
+  if (id === 'tag') return tagObject(doc, pos, around);
   if (id === 'paragraph') return paragraphObject(doc, pos, around);
+  return null;
+}
+
+// ── tag pair (`it` / `at`) — the innermost <tag>…</tag> around the cursor ─────
+// `it` = the content between the tags · `at` = the whole element incl. both
+// tags. Enclosing-only (returns null if the cursor isn't inside a pair), like
+// vanilla vim — tags are structural, so the "seek forward" the bracket/quote
+// objects do would be surprising here.
+
+function tagObject(doc: vscode.TextDocument, pos: vscode.Position, around: boolean): TextObjectResult | null {
+  const text = doc.getText();
+  const cursor = doc.offsetAt(pos);
+
+  type Tok = { name: string; open: boolean; start: number; end: number };
+  const toks: Tok[] = [];
+  // <tag …>, </tag>, and self-closing <tag …/>. Comments/doctype/`<>` fragments
+  // don't match (they require a letter right after `<` or `</`).
+  const re = /<(\/?)([a-zA-Z][\w.:-]*)[^>]*?(\/?)>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m[3] === '/') continue; // self-closing has no content and doesn't nest
+    toks.push({ name: m[2], open: m[1] !== '/', start: m.index, end: m.index + m[0].length });
+  }
+
+  // Walk tags with a stack; inner elements close first, so the first completed
+  // element that encloses the cursor is the innermost one.
+  const stack: Tok[] = [];
+  for (const t of toks) {
+    if (t.open) { stack.push(t); continue; }
+    let openTok: Tok | undefined;
+    for (let i = stack.length - 1; i >= 0; i--) {
+      if (stack[i].name === t.name) { openTok = stack[i]; stack.length = i; break; }
+    }
+    if (!openTok) continue; // stray close — tolerate loose HTML
+    if (cursor >= openTok.start && cursor < t.end) {
+      const [sOff, eOff] = around ? [openTok.start, t.end] : [openTok.end, t.start];
+      return {
+        range: new vscode.Range(doc.positionAt(sOff), doc.positionAt(Math.max(sOff, eOff))),
+        linewise: false,
+      };
+    }
+  }
   return null;
 }
 

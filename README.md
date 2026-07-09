@@ -175,6 +175,7 @@ not. One `:%s` is a single undo.
 | `i(` `i)` `ib` | Inner / around `()` (`ib` alias) |
 | `i{` `i}` `iB` | Inner / around `{}` (`iB` alias) |
 | `i[` `i]` · `i<` `i>` | Inner / around `[]` · `<>` |
+| `it` `at` | Inner / around an HTML/XML/JSX tag pair |
 | `ip` `ap` | Inner / around paragraph |
 
 Use `a` instead of `i` for the "around" (delimiters-included) form: `ci"`,
@@ -348,9 +349,10 @@ restore it after a reinstall.
 
 ## Not built yet
 
-Tag / sentence text objects (`it`/`at`, `is`/`as`). Everything else above —
-marks, named registers, Ex-commands, Replace mode, blockwise Visual, macros, and
-leader mappings — is built and native, with no companion extension required.
+Sentence text objects / motions (`is`/`as`, `(` / `)`). Everything else above —
+marks, named registers, Ex-commands, Replace mode, blockwise Visual, macros,
+leader mappings, and tag objects — is built and native, with no companion
+extension required.
 
 ## Feedback & bug reports
 
