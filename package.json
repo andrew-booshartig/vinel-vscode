@@ -32,6 +32,9 @@
   "bugs": {
     "url": "https://github.com/andrew-booshartig/vinel-vscode/issues"
   },
+  "sponsor": {
+    "url": "https://buymeacoffee.com/andrewbooshartig"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },

@@ -342,8 +342,4 @@ leader mappings — is built and native, with no companion extension required.
 ## Support
 
 If ViNEL saves you time, you can support development ☕
-**[Buy me a coffee](https://buymeacoffee.com/CHANGE-ME)**
-
-<!-- Replace the link above with your real one (Buy Me a Coffee / Ko-fi / GitHub
-     Sponsors). Setting "sponsor": { "url": "..." } in package.json also adds a
-     Sponsor button to the Marketplace page. -->
+**[Buy me a coffee](https://buymeacoffee.com/andrewbooshartig)**
