@@ -57,12 +57,36 @@ function enterNormal(): void {
   operators.cancelPendingRegister();   // …and a dangling " register prefix
   marks.cancelPendingMark();           // …and a half-typed m/`/'
   macros.cancelPendingMacro();         // …and a half-typed q/@
-  // Leaving visual: collapse the selection back to a caret (vim's Escape).
+  // Leaving visual: remember the span (for `gv`), then collapse to a caret.
   if (isVisual(editor)) {
+    lastVisual = {
+      mode: getMode(editor),
+      anchor: editor.selection.anchor,
+      active: editor.selection.active,
+      lineAnchor: getVisualLineAnchor(),
+    };
     const pos = editor.selection.active;
     editor.selection = new vscode.Selection(pos, pos);
   }
   setMode(editor, Mode.Normal); // also clears the linewise anchor
+}
+
+// The most recent Visual selection, for `gv` (reselect). Charwise/linewise
+// restore exactly; blockwise falls back to charwise.
+let lastVisual: { mode: Mode; anchor: vscode.Position; active: vscode.Position; lineAnchor: number | null } | null = null;
+
+/** `gv` — reselect the last Visual selection. */
+function reselectVisual(): void {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || !lastVisual) return;
+  const lv = lastVisual;
+  const mode = lv.mode === Mode.VisualBlock ? Mode.Visual : lv.mode;
+  setMode(editor, mode);
+  editor.selection = new vscode.Selection(lv.anchor, lv.active);
+  if (mode === Mode.VisualLine) {
+    setVisualLineAnchor(lv.lineAnchor ?? lv.anchor.line);
+    afterMotion(editor);
+  }
 }
 
 // Each insert-entry positions the cursor + enters Insert. The `…Core` form is
@@ -349,6 +373,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.cmd', runCommand],
     ['vinel.increment', numbers.increment],
     ['vinel.decrement', numbers.decrement],
+    ['vinel.reselectVisual', reselectVisual],
 
     // Blockwise Visual (Ctrl-V)
     ['vinel.enterVisualBlock', blockwise.enterVisualBlock],

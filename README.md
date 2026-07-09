@@ -29,6 +29,7 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `I` / `A` | Insert at first non-blank / end of line |
 | `o` / `O` | Open a line below / above and insert |
 | `v` / `V` | Charwise / linewise Visual mode (press again or `Esc` to exit) |
+| `gv` | Reselect the last Visual selection |
 | `Ctrl-V` | Blockwise (columnar) Visual — see the Blockwise section below |
 | `R` | Replace (overtype) mode — typing overwrites; Backspace restores |
 

@@ -459,6 +459,10 @@
         "title": "ViNEL: Decrement number (Ctrl-X)"
       },
       {
+        "command": "vinel.reselectVisual",
+        "title": "ViNEL: Reselect last Visual selection (gv)"
+      },
+      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3202,6 +3206,11 @@
       {
         "command": "vinel.decrement",
         "key": "ctrl+x",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.reselectVisual",
+        "key": "g v",
         "when": "editorTextFocus && vinel.mode == 'normal'"
       }
     ]
