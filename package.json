@@ -378,6 +378,10 @@
       {
         "command": "vinel.repeatChange",
         "title": "ViNEL: Repeat last change (.)"
+      },
+      {
+        "command": "vinel.exCommand",
+        "title": "ViNEL: Ex command line (:)"
       }
     ],
     "keybindings": [
@@ -878,6 +882,11 @@
       {
         "command": "vinel.suppressKey",
         "key": "delete",
+        "when": "editorTextFocus && vinel.mode != 'insert'"
+      },
+      {
+        "command": "vinel.exCommand",
+        "key": "shift+;",
         "when": "editorTextFocus && vinel.mode != 'insert'"
       },
       {

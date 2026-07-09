@@ -7,6 +7,7 @@ import {
 import * as motions from './motions';
 import * as operators from './operators';
 import * as dotrepeat from './dotrepeat';
+import * as excommand from './excommand';
 
 /**
  * ViNEL — a native modal-editing state machine for VSCode. Not an
@@ -298,6 +299,7 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.undo', undo],
     ['vinel.redo', redo],
     ['vinel.repeatChange', repeat],
+    ['vinel.exCommand', excommand.promptEx],
 
     // Visual-mode operators
     ['vinel.visualDelete', operators.visualDelete],

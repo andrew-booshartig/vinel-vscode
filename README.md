@@ -67,6 +67,27 @@ Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
 | `p` `P` | Paste after / before |
 | `u` `Ctrl-R` | Undo / redo |
 | `.` | **Repeat the last change** (incl. text typed in an insert change; `N.` overrides the count) |
+| `:` | **Ex command line** (see below) |
+
+### Ex-commands (`:`)
+Opens VS Code's input box; Enter runs, Escape cancels.
+
+| Command | Action |
+|---------|--------|
+| `:w` `:wa` | Save · save all |
+| `:q` `:q!` `:qa` | Close · close discarding · close all |
+| `:wq` `:x` | Save and close |
+| `:sp` `:vs` | Split down · split right |
+| `:42` `:$` | Go to line 42 · last line |
+| `:s/pat/rep/[g][i]` | Substitute on the current line (`g` = all, `i` = ignore case) |
+| `:%s/pat/rep/g` | Substitute across the whole file |
+| `:10,20s/…` | Substitute over a line range |
+| `:'<,'>s/…` | Substitute over the Visual selection (`:` from Visual prefills this) |
+| `:noh` | Clear the search highlight |
+
+Substitution patterns are JavaScript `RegExp` (not full vim regex) — literals,
+`\d`, groups, `\1` backrefs, `&` = whole match all work; `\v`/`\zs`/`\<` do
+not. One `:%s` is a single undo.
 
 ### Text objects (after `d`/`c`/`y`, or in Visual)
 | Key | Object |
