@@ -451,6 +451,14 @@
         "title": "ViNEL: (internal) run a VS Code command from a Vim key"
       },
       {
+        "command": "vinel.increment",
+        "title": "ViNEL: Increment number (Ctrl-A)"
+      },
+      {
+        "command": "vinel.decrement",
+        "title": "ViNEL: Decrement number (Ctrl-X)"
+      },
+      {
         "command": "vinel.enterVisualBlock",
         "title": "ViNEL: Enter VISUAL-BLOCK mode (Ctrl-V)"
       },
@@ -3178,6 +3186,16 @@
         "command": "vinel.cmd",
         "key": "= =",
         "args": "editor.action.reindentselectedlines",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.increment",
+        "key": "ctrl+a",
+        "when": "editorTextFocus && vinel.mode == 'normal'"
+      },
+      {
+        "command": "vinel.decrement",
+        "key": "ctrl+x",
         "when": "editorTextFocus && vinel.mode == 'normal'"
       }
     ]

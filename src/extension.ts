@@ -12,6 +12,7 @@ import * as marks from './marks';
 import * as replace from './replace';
 import * as macros from './macros';
 import * as blockwise from './blockwise';
+import * as numbers from './numbers';
 
 /**
  * ViNEL — a native modal-editing state machine for VSCode. Not an
@@ -344,6 +345,8 @@ export function activate(context: vscode.ExtensionContext): void {
     ['vinel.macroPlayLast', macros.macroPlayLast],
     ['vinel.recExec', macros.recExec],
     ['vinel.cmd', runCommand],
+    ['vinel.increment', numbers.increment],
+    ['vinel.decrement', numbers.decrement],
 
     // Blockwise Visual (Ctrl-V)
     ['vinel.enterVisualBlock', blockwise.enterVisualBlock],
