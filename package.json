@@ -2,7 +2,7 @@
   "name": "vinel",
   "displayName": "ViNEL — Vim & Neovim modal editing",
   "description": "Vim / Neovim modal editing for VS Code — ViNEL Is Not an Emulation Layer. A native modal state machine (normal/visual/insert modes, operators, text objects, dot-repeat, find-char) routed straight to VS Code's own commands. Not a Vim emulation and not a Neovim bridge: no type-hijack, no shadow undo — fast on big files.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "andrew-booshartig",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -49,6 +49,31 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "ViNEL",
+      "properties": {
+        "vinel.cursorColor.normal": {
+          "type": "string",
+          "default": "",
+          "description": "Cursor color in Normal mode (e.g. #f7768e). Empty = your theme's default cursor color. Leave all four empty and ViNEL never changes the cursor color."
+        },
+        "vinel.cursorColor.insert": {
+          "type": "string",
+          "default": "",
+          "description": "Cursor color in Insert mode (e.g. #7aa2f7). Empty = theme default."
+        },
+        "vinel.cursorColor.visual": {
+          "type": "string",
+          "default": "",
+          "description": "Cursor color in Visual / Visual-Line / Visual-Block modes (e.g. #bb9af7). Empty = theme default."
+        },
+        "vinel.cursorColor.replace": {
+          "type": "string",
+          "default": "",
+          "description": "Cursor color in Replace mode. Empty = theme default."
+        }
+      }
+    },
     "commands": [
       {
         "command": "vinel.enterNormal",

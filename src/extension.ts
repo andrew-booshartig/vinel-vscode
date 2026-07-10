@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {
-  Mode, afterMotion, appendDigit, consumeCount, createStatusBarItem, getMode,
-  getVisualLineAnchor, isVisual, setMode, setVisualLineAnchor, syncActiveEditor,
+  Mode, afterMotion, appendDigit, clearCursorColor, consumeCount, createStatusBarItem,
+  getMode, getVisualLineAnchor, isVisual, setMode, setVisualLineAnchor, syncActiveEditor,
   zeroIsMotion,
 } from './state';
 import * as motions from './motions';
@@ -491,4 +491,5 @@ export function deactivate(): void {
   for (const editor of vscode.window.visibleTextEditors) {
     editor.options = { ...editor.options, cursorStyle: vscode.TextEditorCursorStyle.Line };
   }
+  clearCursorColor(); // remove any opt-in per-mode cursor color override
 }

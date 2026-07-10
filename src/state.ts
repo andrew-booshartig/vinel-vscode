@@ -156,8 +156,7 @@ function applyToEditor(editor: vscode.TextEditor): void {
   vscode.commands.executeCommand('setContext', 'vinel.mode', CONTEXT_VALUE[mode]);
 
   // Line cursor while typing (Insert); underline in Replace (vim's overtype
-  // cue); block everywhere else. Cursor COLOR is a known future addition;
-  // shape is the per-editor-safe signal for now.
+  // cue); block everywhere else. Cursor SHAPE is per-editor-safe.
   editor.options = {
     ...editor.options,
     cursorStyle: mode === Mode.Insert
@@ -167,7 +166,53 @@ function applyToEditor(editor: vscode.TextEditor): void {
         : vscode.TextEditorCursorStyle.Block,
   };
 
+  applyCursorColor(mode);
   renderStatusBar(mode);
+}
+
+// ── Per-mode cursor COLOR (opt-in) ───────────────────────────────────────────
+// VS Code has only ONE global cursor color (`editorCursor.foreground`), so this
+// rewrites it on mode change — but ONLY if the user has set any `vinel.cursorColor.*`
+// value. Default (all empty) → ViNEL never touches it, so the cursor stays the
+// theme default for everyone. (This is the one heavier op ViNEL does; it's opt-in.)
+
+const CURSOR_COLOR_KEY: Record<Mode, string> = {
+  [Mode.Normal]: 'normal',
+  [Mode.Insert]: 'insert',
+  [Mode.Visual]: 'visual',
+  [Mode.VisualLine]: 'visual',
+  [Mode.VisualBlock]: 'visual',
+  [Mode.Replace]: 'replace',
+};
+let lastCursorColor: string | null = null;
+
+function applyCursorColor(mode: Mode): void {
+  const cfg = vscode.workspace.getConfiguration('vinel.cursorColor');
+  const anyConfigured = ['normal', 'insert', 'visual', 'replace']
+    .some((k) => (cfg.get<string>(k) ?? '').trim() !== '');
+  if (!anyConfigured) return; // opt-in: no colors set → leave the global setting alone
+
+  const color = (cfg.get<string>(CURSOR_COLOR_KEY[mode]) ?? '').trim();
+  if (color === lastCursorColor) return; // only write on an actual change
+  lastCursorColor = color;
+
+  const wb = vscode.workspace.getConfiguration('workbench');
+  const custom = { ...(wb.get<Record<string, unknown>>('colorCustomizations') ?? {}) };
+  if (color) custom['editorCursor.foreground'] = color;
+  else delete custom['editorCursor.foreground']; // this mode has no color → theme default
+  wb.update('colorCustomizations', custom, vscode.ConfigurationTarget.Global);
+}
+
+/** Remove ViNEL's cursor-color override (called on deactivate). */
+export function clearCursorColor(): void {
+  if (lastCursorColor === null) return;
+  lastCursorColor = null;
+  const wb = vscode.workspace.getConfiguration('workbench');
+  const custom = { ...(wb.get<Record<string, unknown>>('colorCustomizations') ?? {}) };
+  if ('editorCursor.foreground' in custom) {
+    delete custom['editorCursor.foreground'];
+    wb.update('colorCustomizations', custom, vscode.ConfigurationTarget.Global);
+  }
 }
 
 function renderStatusBar(mode: Mode): void {
