@@ -2,7 +2,7 @@
   "name": "vinel",
   "displayName": "ViNEL — Vim & Neovim modal editing",
   "description": "Vim / Neovim modal editing for VS Code — ViNEL Is Not an Emulation Layer. A native modal state machine (normal/visual/insert modes, operators, text objects, dot-repeat, find-char) routed straight to VS Code's own commands. Not a Vim emulation and not a Neovim bridge: no type-hijack, no shadow undo — fast on big files.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "andrew-booshartig",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -516,35 +516,6 @@
       }
     ],
     "keybindings": [
-      {
-        "command": "-tabout",
-        "key": "tab",
-        "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible"
-      },
-      {
-        "command": "tabout",
-        "key": "tab",
-        "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode"
-      },
-      {
-        "command": "-tabout-reverse",
-        "key": "shift+tab",
-        "when": "config.tabout.enableReverseShiftTab && editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible"
-      },
-      {
-        "command": "tabout-reverse",
-        "key": "shift+tab",
-        "when": "config.tabout.enableReverseShiftTab && editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode"
-      },
-      {
-        "command": "-acceptSelectedSuggestion",
-        "key": "tab"
-      },
-      {
-        "command": "tabout",
-        "key": "tab",
-        "when": "editorTextFocus && !editorHasSelection && !editorHasMultipleSelections && suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !inSnippetMode"
-      },
       {
         "command": "vinel.suppressKey",
         "key": "0",

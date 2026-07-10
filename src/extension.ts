@@ -32,11 +32,6 @@ import * as numbers from './numbers';
  * excellently (its own Find, cursor-move commands, undo/redo), this uses
  * that directly rather than reimplementing vim on top of it — e.g. `/` opens
  * VS Code's own Find instead of a hand-built vim search.
- *
- * package.json also contributes a general keybinding fix: `tabout`'s own
- * default binding doesn't exclude `inSnippetMode`, so it can hijack Tab away
- * from snippet-tabstop navigation. That's fixed declaratively (no code here)
- * — see the `contributes.keybindings` block.
  */
 
 function enterNormal(): void {
