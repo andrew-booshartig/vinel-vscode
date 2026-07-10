@@ -1,27 +1,94 @@
+<div align="center">
+
+<img src="images/icon.png" alt="ViNEL logo" width="128" height="128" />
+
 # ViNEL
 
-**ViNEL Is Not an Emulation Layer** — Vim / Neovim modal editing for VS Code.
-(An ode to Wine and Vi.)
+### ViNEL Is Not an Emulation Layer
 
-## What it is
+**Native Vim / Neovim modal editing for VS Code — fast, faithful, and built on VS Code's own commands.**
 
-Vim's modal editing — Normal / Visual / Insert modes, operators, text objects,
-dot-repeat, find-char, counts — built as a **native state machine** on top of
-VS Code, not a Vim emulation and not a Neovim bridge.
+<sub>(an ode to Wine and Vi)</sub>
 
-- **Normal mode** does what Vim would do; **Insert mode** does what VS Code
-  would do (typing is 100% native — ViNEL never touches it). By design, Insert
-  mode stays plain VS Code: Vim's insert-mode shortcuts (like `Ctrl-R`) are
-  deliberately left out so Insert feels exactly like the editor you know.
-- Every command routes straight to VS Code's **own** commands (cursor moves,
-  edits, undo, find). No `type`-command hijacking, no shadow undo tree — the
-  two things that make other Vim extensions lag on big files and mangle undo.
-- A status-bar badge shows the mode: **☯ NORMAL · ☯ INSERT · ☯ VISUAL ·
-  ☯ V-LINE**. The block/line cursor tracks it.
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/andrew-booshartig.vinel?label=Marketplace&color=1a1b26)](https://marketplace.visualstudio.com/items?itemName=andrew-booshartig.vinel)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/andrew-booshartig.vinel?label=installs&color=1a1b26)](https://marketplace.visualstudio.com/items?itemName=andrew-booshartig.vinel)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1a1b26)](LICENSE)
 
-Everything below is count-aware — prefix a number (`3dd`, `5j`, `2ci"`).
+</div>
+
+---
+
+ViNEL gives you Vim's whole grammar — modes, operators, motions, text objects,
+counts, registers, macros, Ex-commands — **without the two problems every other
+Vim extension has:**
+
+- It **never hijacks the `type` command** to parse your keystrokes. That hijack
+  is what makes other Vim extensions lag and drop keys on big files. In ViNEL,
+  Normal-mode keys are ordinary keybindings routed straight to VS Code's own
+  commands, and **Insert mode is 100% native** — it's just VS Code.
+- It keeps **no shadow undo tree**. Other extensions maintain a parallel undo
+  history that fights VS Code's own, so `u` undoes the wrong thing. ViNEL uses
+  VS Code's real undo, so it's always correct.
+
+The result: it's quick even on huge files, your undo history behaves, and there's
+**no companion extension, no Neovim install, and no config file required.** A
+status-bar badge (**☯ NORMAL · INSERT · VISUAL · V-LINE · V-BLOCK · REPLACE**)
+and the block/line cursor always show the mode.
+
+## ✨ Highlights
+
+- **Every mode** — Normal, Insert, Visual (charwise / linewise), **blockwise
+  Visual** (`Ctrl-V`) with block-insert `I`/`A`, and Replace.
+- **The full operator grammar** — `d` / `c` / `y` over any motion or text object,
+  with counts (`3dd`, `2ci"`) and **dot-repeat** (`.`).
+- **Text objects** — words, quotes, brackets, **HTML/JSX tags** (`it` / `at`),
+  **sentences** (`is` / `as`), and paragraphs.
+- **Surround built in** — `ysiw"`, `cs"'`, `ds(`, Visual `S)` (vim-surround), no
+  plugin needed.
+- **Native macros** — record & replay with a count prefix and a red recording
+  badge; never depends on a second extension.
+- **Marks, named registers, and Ex-commands** — `:%s/…/…/g`, ranges, `:w`, `:sp`,
+  plus find-char (`f`/`t`/`;`/`,`) and search (`/`, `?`, `*`, `#`, `n`/`N`).
+- **IDE power under Vim keys** — go-to-definition (`gd`), references (`gr`), hover
+  (`K`), folding (`za`…), splits (`Ctrl-W`…), tab switch (`gt`), comment (`gcc`),
+  and the jump list (`Ctrl-O` / `Ctrl-I`).
+- **The little things** — increment/decrement (`Ctrl-A` / `Ctrl-X`), case
+  operators (`gUiw`), `gv`, `ge`/`gE`, `{count}G`, and more.
+- **Leader mappings** you script with plain VS Code keybindings — nothing bespoke
+  to learn.
+
+## 🚀 Install
+
+Search **"ViNEL"** in the Extensions view (`Cmd/Ctrl+Shift+X`), or
+[open it on the Marketplace](https://marketplace.visualstudio.com/items?itemName=andrew-booshartig.vinel).
+
+> ⚠️ **Disable VSCodeVim first** if you have it installed — two modal engines
+> fighting over the same keys is unpredictable
+> (`code --uninstall-extension vscodevim.vim`).
+
+Then just start editing — press `Esc` to drop into Normal mode. Everything below
+is the full reference.
+
+## Why not VSCodeVim or vscode-neovim?
+
+Both are great — ViNEL just makes a different architectural bet.
+
+- **VSCodeVim** emulates Vim by intercepting the `type` command and pushing every
+  keystroke through the extension host, then reconciling its own undo tree with
+  VS Code's. That's the root of its two most-reported issues: input lag / dropped
+  keystrokes on large files, and `u` undoing more (or less) than you meant. ViNEL
+  never intercepts typing and keeps no shadow undo, so neither happens.
+- **vscode-neovim** embeds a real Neovim process — maximum fidelity, but you have
+  to install and manage Neovim, and two editors sharing one buffer can desync.
+  ViNEL needs nothing but VS Code.
+
+The trade-off: ViNEL targets **standard Vim behavior mapped onto VS Code's native
+features**, not a byte-for-byte port of every obscure Vim quirk. If you want the
+common 95% to feel instant and correct with zero setup, that's the bet it makes.
 
 ## Controls
+
+Everything here is **count-aware** — prefix a number (`3dd`, `5j`, `2ci"`).
 
 ### Modes & entering Insert
 | Key | Action |
